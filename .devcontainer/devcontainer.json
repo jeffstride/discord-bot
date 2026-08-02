@@ -1,0 +1,20 @@
+{
+  "name": "discord-bot-js",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye",
+  "postCreateCommand": "npm install",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Discord interactions endpoint",
+      "visibility": "public"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dotenv.dotenv-vscode",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
