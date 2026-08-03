@@ -56,7 +56,8 @@ You can manually create and copy the contents over, or you can use the command l
 # Copy the .env.example file to the .env file
 cp .env.example .env
 ```
-Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
+Then open `.env` and paste in your Application ID, Public Key, and Bot Token.  
+> `Dotenv Official + Vault` is an extension that my applied in Codespaces. This will hide your *secrets* in the `.env` file. To disable it, take note of the small grey text at the top: "Toggle auto-cloaking".  
 
 ### 4. Register your slash command
 ```bash
@@ -70,8 +71,10 @@ npm start
 ```
 Or press **F5** in VS Code to run it with the debugger attached (breakpoints will work).
 
-### 6. Make the port public and copy the URL
-Open the **Ports** tab at the bottom of VS Code. Port `3000` should already be listed (and set to Public by `devcontainer.json`) — if it says "Private", right-click it → **Port Visibility → Public**. Copy the forwarded address, which looks like:
+### 6. Make the port reachable and copy the URL
+If you're using GitHub Codespaces, open the **Ports** tab at the bottom of VS Code. Port `3000` should already be listed and set to **Public** by `.devcontainer/devcontainer.json`. If it still shows **Private**, right-click it → **Port Visibility → Public**.
+
+If you're using a local Dev Container instead of Codespaces, the forwarded port cannot be made public from the dev container itself. In that case, use a public tunnel such as **ngrok** or **Cloudflare Tunnel**, then paste that public URL into Discord. Copy the forwarded address, which looks like:
 ```
 https://your-codespace-name-3000.app.github.dev
 ```
