@@ -37,7 +37,8 @@ what you'll eventually use for the class project.
 
 ### 1. Create a Discord Application
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) → **New Application**, give it a name.
-2. On **General Information**, note the **Application ID** and **Public Key** (you'll paste these into `.env` shortly).
+2. On **General Information**, note the **Application ID** and **Public Key**. Keep these in some text file for a bit. In step #3 below, you'll create and paste these into `.env`.
+> **If your repo is public:** don't type real secrets into `.env` before pushing anything. Create the Codespace first, then create/edit `.env` inside it. It's already git-ignored, but it's safer not to have typed secrets into any file until you're inside the Codespace.
 3. Go to **Bot** (left sidebar) → **Reset Token** → copy it immediately -- Discord won't show it to you again.
 4. Go to **Installation** (left sidebar):
    - Under **Installation Contexts**, leave both **User Install** and **Guild Install** checked.
@@ -49,13 +50,13 @@ what you'll eventually use for the class project.
 2. In VS Code, install the **GitHub Codespaces** extension if you don't have it.
 3. Command Palette (`Cmd/Ctrl+Shift+P`) → **Codespaces: Create New Codespace** → pick this repo/branch. VS Code will connect to it like a remote window; `npm install` runs automatically via `devcontainer.json`.
 
-### 3. Configure your secrets
+### 3. Configure your secrets  
+You can manually create and copy the contents over, or you can use the command line to copy the contents of `.env.example`. 
 ```bash
+# Copy the .env.example file to the .env file
 cp .env.example .env
 ```
 Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
-
-> **If your repo is public:** don't type real secrets into `.env` before pushing anything. Create the Codespace first, then create/edit `.env` inside it. It's already git-ignored, but it's safer not to have typed secrets into any file until you're inside the Codespace.
 
 ### 4. Register your slash command
 ```bash
