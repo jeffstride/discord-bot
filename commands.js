@@ -22,6 +22,26 @@ const ROLL_COMMAND = {
   ],
 };
 
-const ALL_COMMANDS = [HELLO_COMMAND, ROLL_COMMAND];
+const REMIND_COMMAND = {
+  name: 'remind',
+  description: 'Schedule a reminder message for later',
+  type: 1,
+  options: [
+    {
+      name: 'minutes',
+      description: 'How many minutes from now to send the reminder',
+      type: 4, // 4 = INTEGER
+      required: true,
+    },
+    {
+      name: 'message',
+      description: 'The reminder message to send',
+      type: 3, // 3 = STRING
+      required: true,
+    },
+  ],
+};
 
-module.exports = { ALL_COMMANDS, HELLO_COMMAND, ROLL_COMMAND };
+const ALL_COMMANDS = [HELLO_COMMAND, ROLL_COMMAND, REMIND_COMMAND];
+
+module.exports = { ALL_COMMANDS, HELLO_COMMAND, ROLL_COMMAND, REMIND_COMMAND };
