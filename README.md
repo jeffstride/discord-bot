@@ -35,6 +35,10 @@ what you'll eventually use for the class project.
 
 ## Setup
 
+### 0. Create Discord Server
+1. Create a Discord account by going to [Discord](https://discord.com).  Or,  https://discord.com/channels/@me  
+2. Create your own "Server" by click on the `+` button in the left nav to "Add a server". Make it for your friends only.   
+
 ### 1. Create a Discord Application
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) → **New Application**, give it a name.
 2. On **General Information**, note the **Application ID** and **Public Key**. Keep these in some text file for a bit. In step #3 below, you'll create and paste these into `.env`.
@@ -43,7 +47,7 @@ what you'll eventually use for the class project.
 4. Go to **Installation** (left sidebar):
    - Under **Installation Contexts**, leave both **User Install** and **Guild Install** checked.
    - Under **Default Install Settings**, add scope `applications.commands` for both, and also add scope `bot` for Guild Install. When `bot` appears, also check the **Send Messages** permission.
-5. Copy the **Install Link** shown on that page. Paste it into your browser, hit enter, and choose **Add to Server** to install the bot to your personal test server (create one first if you don't have one: Discord's server list `+` button → **Create My Own**).
+5. Copy the **Install Link** shown on that page. Paste it into your browser, hit enter, and choose **Add to Server** to install the bot to your personal test server 
 
 ### 2. Open this repo in a Codespace, from VS Code
 1. Push this repo to GitHub (or open it from wherever your class template lives).
