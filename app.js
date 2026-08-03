@@ -28,12 +28,33 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), (req, res) => {
   const { type, data } = req.body;
 
   if (type === InteractionType.APPLICATION_COMMAND) {
-    const { name } = data;
+    const { name, options = [] } = data;
 
     if (name === 'hello') {
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: { content: 'Hello from your Codespaces-hosted bot! 👋' },
+      });
+    }
+
+    if (name === 'roll') {
+      const sidesOption = options.find((option) => option.name === 'sides');
+      const sides = Number(sidesOption?.value);
+
+      if (!Number.isInteger(sides) || sides < 1) {
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content:
+              'Please provide a positive integer number of sides for the die.',
+          },
+        });
+      }
+
+      const roll = Math.floor(Math.random() * sides) + 1;
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: `🎲 You rolled a ${roll} (1-${sides})` },
       });
     }
 

@@ -8,6 +8,20 @@ const HELLO_COMMAND = {
   type: 1, // 1 = CHAT_INPUT, i.e. a slash command
 };
 
-const ALL_COMMANDS = [HELLO_COMMAND];
+const ROLL_COMMAND = {
+  name: 'roll',
+  description: 'Roll a die with the specified number of sides',
+  type: 1,
+  options: [
+    {
+      name: 'sides',
+      description: 'Number of sides on the die',
+      type: 4, // 4 = INTEGER
+      required: true,
+    },
+  ],
+};
 
-module.exports = { ALL_COMMANDS, HELLO_COMMAND };
+const ALL_COMMANDS = [HELLO_COMMAND, ROLL_COMMAND];
+
+module.exports = { ALL_COMMANDS, HELLO_COMMAND, ROLL_COMMAND };
