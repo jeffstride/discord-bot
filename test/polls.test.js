@@ -72,6 +72,21 @@ test('does not allow a user to answer the same poll twice', () => {
   );
 });
 
+test('allows the configured instructor user to answer a poll', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  createPoll('quiz1', 'Choose', 'A) Yes\nB) No', '1', dataDirectory);
+
+  const result = recordPollVotes(
+    'quiz1',
+    ['0'],
+    { userId: 'instructor-id', username: 'Instructor' },
+    dataDirectory,
+  );
+
+  assert.equal(result.isCorrect, true);
+  assert.equal(getUserScore('instructor-id', dataDirectory), 3);
+});
+
 test('resets counts without deleting the poll definition', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
   createPoll('quiz1', 'Choose', 'First\nSecond', '', dataDirectory);
@@ -90,13 +105,13 @@ test('resets counts without deleting the poll definition', () => {
   assert.deepEqual(poll.voters, []);
 });
 
-test('matches quiz answers by case-insensitive option prefix', () => {
+test('accepts comma-separated correct option numbers', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
   createPoll(
     'quiz1',
     'Choose every A answer',
     'A) First\nB) Second\na) Third',
-    'A)',
+    '1,3',
     dataDirectory,
   );
 
@@ -119,18 +134,18 @@ test('matches quiz answers by case-insensitive option prefix', () => {
   });
 });
 
-test('rejects a correct answer prefix that matches no option', () => {
+test('rejects a correct answer number outside the option range', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
 
   assert.throws(
-    () => createPoll('quiz1', 'Choose', 'A) First\nB) Second', 'C)', dataDirectory),
-    /must match the start/,
+    () => createPoll('quiz1', 'Choose', 'A) First\nB) Second', '3', dataDirectory),
+    /between 1 and 2/,
   );
 });
 
 test('does not score a partial or extra quiz selection as correct', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
-  createPoll('quiz1', 'Choose', 'A) First\nA) Second\nB) Third', 'a)', dataDirectory);
+  createPoll('quiz1', 'Choose', 'A) First\nA) Second\nB) Third', '1,2', dataDirectory);
 
   const result = recordPollVotes(
     'quiz1',
@@ -153,8 +168,8 @@ test('does not score a partial or extra quiz selection as correct', () => {
 test('persists correct and incorrect counts with the calculated score', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
   const voter = { userId: 'user-1', username: 'Ada' };
-  createPoll('quiz1', 'Choose', 'A) Yes\nB) No', 'A)', dataDirectory);
-  createPoll('quiz2', 'Choose', 'A) Yes\nB) No', 'A)', dataDirectory);
+  createPoll('quiz1', 'Choose', 'A) Yes\nB) No', '1', dataDirectory);
+  createPoll('quiz2', 'Choose', 'A) Yes\nB) No', '1', dataDirectory);
   recordPollVotes('quiz1', ['0'], voter, dataDirectory);
   recordPollVotes('quiz2', ['1'], voter, dataDirectory);
 
@@ -174,7 +189,7 @@ test('returns the top five cumulative quiz scores', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
 
   for (let index = 0; index < 6; index += 1) {
-    createPoll(`quiz${index}`, 'Choose', 'A) Yes\nB) No', 'A)', dataDirectory);
+    createPoll(`quiz${index}`, 'Choose', 'A) Yes\nB) No', '1', dataDirectory);
     recordPollVotes(
       `quiz${index}`,
       ['0'],
@@ -188,7 +203,7 @@ test('returns the top five cumulative quiz scores', () => {
 
 test('resets all cumulative quiz scores', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
-  createPoll('quiz1', 'Choose', 'A) Yes\nB) No', 'A)', dataDirectory);
+  createPoll('quiz1', 'Choose', 'A) Yes\nB) No', '1', dataDirectory);
   recordPollVotes(
     'quiz1',
     ['0'],

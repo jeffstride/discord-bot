@@ -44,7 +44,7 @@ export function createPoll(
   name,
   prompt,
   answerLines,
-  correctAnswerPrefix = '',
+  correctAnswerIndexes = '',
   dataDirectory = defaultDataDirectory,
 ) {
   if (!validatePollName(name)) {
@@ -67,15 +67,21 @@ export function createPoll(
     throw new Error('Poll answers must be 100 characters or fewer');
   }
 
-  const normalizedPrefix = correctAnswerPrefix?.trim().toLowerCase() || '';
-  const correctOptionIndexes = normalizedPrefix
-    ? answers
-      .map((answer, index) => (answer.toLowerCase().startsWith(normalizedPrefix) ? index : -1))
-      .filter((index) => index !== -1)
+  const normalizedIndexes = correctAnswerIndexes?.trim() || '';
+  const oneBasedIndexes = normalizedIndexes
+    ? normalizedIndexes.split(',').map((value) => value.trim())
     : [];
 
-  if (normalizedPrefix && correctOptionIndexes.length === 0) {
-    throw new Error('The correct answer must match the start of at least one option');
+  if (oneBasedIndexes.some((value) => !/^\d+$/.test(value))) {
+    throw new Error('Correct answers must be comma-separated option numbers');
+  }
+
+  const correctOptionIndexes = [...new Set(
+    oneBasedIndexes.map((value) => Number.parseInt(value, 10) - 1),
+  )].toSorted((left, right) => left - right);
+
+  if (correctOptionIndexes.some((index) => index < 0 || index >= answers.length)) {
+    throw new Error(`Correct answer numbers must be between 1 and ${answers.length}`);
   }
 
   return savePoll({
