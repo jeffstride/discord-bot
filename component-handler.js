@@ -4,7 +4,9 @@ import {
 } from './commands/coldcall.js';
 import {
   CREDIT_COMPONENT_PREFIX,
+  CREDIT_PAGE_COMPONENT_PREFIX,
   handleComponent as handleCreditComponent,
+  handlePageComponent as handleCreditPageComponent,
 } from './commands/credit.js';
 import {
   handleComponent as handleSetSectionComponent,
@@ -20,6 +22,7 @@ import {
 const componentHandlers = {
   [COLD_CALL_COMPONENT_PREFIX]: handleColdcallComponent,
   [CREDIT_COMPONENT_PREFIX]: handleCreditComponent,
+  [CREDIT_PAGE_COMPONENT_PREFIX]: handleCreditPageComponent,
   [SET_SECTION_COMPONENT_ID]: (_componentId, req) => handleSetSectionComponent(req),
   [POLL_OPEN_COMPONENT_PREFIX]: handlePollOpenComponent,
   [POLL_VOTE_COMPONENT_PREFIX]: handlePollVoteComponent,
