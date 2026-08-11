@@ -26,9 +26,11 @@ what you'll eventually use for the class project.
 
 | File | Purpose |
 |---|---|
-| `app.js` | The Express server that receives and answers Discord interactions |
-| `commands.js` | Defines what slash commands exist (just `/hello` to start) |
-| `register-commands.js` | One-time script that tells Discord about the commands in `commands.js` |
+| `app.js` | The Express server that receives Discord interactions |
+| `command-handler.js` | Dispatches slash commands to handlers by command name |
+| `commands/` | Keeps each slash command definition and handler together |
+| `commands.js` | Collects the command definitions for registration |
+| `register-commands.js` | One-time script that tells Discord about the commands |
 | `utils.js` | Small helper for calling Discord's API with your bot token |
 | `.devcontainer/devcontainer.json` | Tells Codespaces what to install and which port to expose |
 | `.vscode/launch.json` | Lets you press **F5** in VS Code to run the bot with the debugger attached |
@@ -67,7 +69,7 @@ Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
 ```bash
 npm run register
 ```
-You should see `Registered 1 command(s): hello`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
+You should see `Registered 3 command(s): hello, roll, remind`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
 
 ### 5. Run the bot
 ```bash
@@ -94,9 +96,10 @@ Click **Save Changes**. Discord immediately sends a test `PING` — if `app.js` 
 In your Discord test server, type `/hello`. The bot should reply "Hello from your Codespaces-hosted bot! 👋".
 
 ## Adding your own commands
-1. Add a new command object to `ALL_COMMANDS` in `commands.js`, then re-run `npm run register`.
-2. Add a matching `if (name === '...')` branch inside the `/interactions` handler in `app.js`.
-3. Restart the server (or just let `npm run dev` auto-restart it on save).
+1. Add a module in `commands/` that exports `command` and `handleCommand`.
+2. Import its definition in `commands.js` and its handler in `command-handler.js`.
+3. Run `npm run register` to update Discord.
+4. Restart the server (or just let `npm run dev` auto-restart it on save).
 
 ## Troubleshooting
 - **Interactions Endpoint URL won't save** → the app isn't running, or the port isn't public. Check both.
