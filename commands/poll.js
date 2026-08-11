@@ -27,6 +27,19 @@ const TIMEOUT_INPUT_ID = 'poll_timeout';
 const POLL_ACTIONS = ['create', 'send', 'delete', 'reset', 'results'];
 const activeBallotTimers = new Map();
 
+export function formatPollTimeout(timeoutMs) {
+  if (timeoutMs === 60000) {
+    return '1 minute';
+  }
+  return `${timeoutMs / 1000} seconds`;
+}
+
+export function addTimeoutNotice(content, timeoutMs) {
+  return timeoutMs
+    ? `${content}\nCloses in ${formatPollTimeout(timeoutMs)}`
+    : content;
+}
+
 export const command = {
   name: 'poll',
   description: 'Create, send, manage, or view a poll',
@@ -152,7 +165,7 @@ function createSendResponse(name, req) {
   const response = {
     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
     data: {
-      content: `Poll: ${name}`,
+      content: addTimeoutNotice(`Poll: ${name}`, poll.timeoutMs),
       components: [{
         type: MessageComponentTypes.ACTION_ROW,
         components: [{
@@ -283,7 +296,7 @@ export function handleOpenComponent(componentId, req) {
     const response = {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {
-        content: poll.prompt,
+        content: addTimeoutNotice(poll.prompt, poll.timeoutMs),
         flags: InteractionResponseFlags.EPHEMERAL,
         components: [{
           type: MessageComponentTypes.ACTION_ROW,

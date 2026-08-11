@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { command, createModal } from '../commands/poll.js';
+import {
+  addTimeoutNotice,
+  command,
+  createModal,
+  formatPollTimeout,
+} from '../commands/poll.js';
 import {
   createPoll,
   deletePoll,
@@ -44,6 +49,18 @@ test('poll modal provides the supported timeout choices', () => {
       ['1 minute', '60000'],
     ],
   );
+});
+
+test('formats timeout notices for poll invitations and ballots', () => {
+  assert.equal(formatPollTimeout(20000), '20 seconds');
+  assert.equal(formatPollTimeout(30000), '30 seconds');
+  assert.equal(formatPollTimeout(40000), '40 seconds');
+  assert.equal(formatPollTimeout(60000), '1 minute');
+  assert.equal(
+    addTimeoutNotice('Poll: quiz1', 30000),
+    'Poll: quiz1\nCloses in 30 seconds',
+  );
+  assert.equal(addTimeoutNotice('Poll: quiz1', 0), 'Poll: quiz1');
 });
 
 test('validates poll names for safe filenames', () => {
