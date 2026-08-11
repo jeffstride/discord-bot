@@ -2,7 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { InteractionResponseType } from 'discord-interactions';
+import {
+  InteractionResponseFlags,
+  InteractionResponseType,
+} from 'discord-interactions';
 
 const commandsDirectory = path.dirname(fileURLToPath(import.meta.url));
 const defaultStudentsPath = path.join(commandsDirectory, '..', 'data', 'students.csv');
@@ -85,7 +88,22 @@ export function createColdcallResponse(names, random = Math.random) {
   };
 }
 
-export function handleCommand() {
+export function isAuthorizedUser(req, allowedUserId = process.env.COLD_CALL_USER_ID) {
+  const invokingUserId = req.body.member?.user?.id || req.body.user?.id;
+  return Boolean(allowedUserId) && invokingUserId === allowedUserId;
+}
+
+export function handleCommand(req) {
+  if (!isAuthorizedUser(req)) {
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: 'You are not authorized to use this command.',
+        flags: InteractionResponseFlags.EPHEMERAL,
+      },
+    };
+  }
+
   try {
     return createColdcallResponse(loadStudentNames());
   } catch (error) {

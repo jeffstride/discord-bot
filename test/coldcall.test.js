@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import {
   createColdcallResponse,
+  isAuthorizedUser,
   loadStudentNames,
   selectRandomStudent,
 } from '../commands/coldcall.js';
@@ -26,4 +27,17 @@ test('returns the selected student in the command response', () => {
   const response = createColdcallResponse(['Ada', 'Grace'], () => 0);
 
   assert.equal(response.data.content, 'Ada has been selected');
+});
+
+test('authorizes the configured user in a server interaction', () => {
+  const request = { body: { member: { user: { id: 'instructor-id' } } } };
+
+  assert.equal(isAuthorizedUser(request, 'instructor-id'), true);
+  assert.equal(isAuthorizedUser(request, 'another-id'), false);
+});
+
+test('authorizes the configured user in a direct-message interaction', () => {
+  const request = { body: { user: { id: 'instructor-id' } } };
+
+  assert.equal(isAuthorizedUser(request, 'instructor-id'), true);
 });
