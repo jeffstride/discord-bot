@@ -9,8 +9,6 @@ import { isAuthorizedUser } from './coldcall.js';
 import {
   createPoll,
   deletePoll,
-  getTopScores,
-  getUserScore,
   hasVoted,
   loadPoll,
   recordPollVotes,
@@ -24,7 +22,7 @@ export const POLL_VOTE_COMPONENT_PREFIX = 'poll_vote:';
 const PROMPT_INPUT_ID = 'poll_prompt';
 const ANSWERS_INPUT_ID = 'poll_answers';
 const CORRECT_ANSWER_INPUT_ID = 'poll_correct_answer';
-const POLL_ACTIONS = ['create', 'send', 'delete', 'reset', 'results', 'score'];
+const POLL_ACTIONS = ['create', 'send', 'delete', 'reset', 'results'];
 
 export const command = {
   name: 'poll',
@@ -132,7 +130,7 @@ function formatResults(poll) {
   ].join('\n');
 }
 
-function getInvokingUser(req) {
+export function getInvokingUser(req) {
   const user = req.body.member?.user || req.body.user;
   return {
     userId: user?.id,
@@ -140,23 +138,11 @@ function getInvokingUser(req) {
   };
 }
 
-function formatScoreResponse(req) {
-  const invokingUser = getInvokingUser(req);
-
-  if (isAuthorizedUser(req)) {
-    const topScores = getTopScores();
-    return topScores.length === 0
-      ? 'No quiz scores have been recorded.'
-      : [
-        'Top quiz scores:',
-        ...topScores.map((user, index) => `${index + 1}. ${user.username}: ${user.score}`),
-      ].join('\n');
+export function handleCommand(req) {
+  if (!isAuthorizedUser(req)) {
+    return message('You are not authorized to use this command.', true);
   }
 
-  return `${invokingUser.username || 'Your'} score: ${getUserScore(invokingUser.userId)}`;
-}
-
-export function handleCommand(req) {
   const name = getOption(req, 'name');
   const action = getOption(req, 'action');
 
@@ -168,13 +154,6 @@ export function handleCommand(req) {
     return message('Invalid poll action.', true);
   }
 
-  if (action === 'score') {
-    return message(formatScoreResponse(req), true);
-  }
-
-  if (!isAuthorizedUser(req)) {
-    return message('You are not authorized to use this command.', true);
-  }
 
   if (action === 'create') {
     return createModal(name);

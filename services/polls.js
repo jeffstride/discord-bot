@@ -146,6 +146,10 @@ export function getTopScores(limit = 5, dataDirectory = defaultDataDirectory) {
     .slice(0, limit);
 }
 
+export function resetScores(dataDirectory = defaultDataDirectory) {
+  saveScores({ users: [] }, dataDirectory);
+}
+
 export function recordPollVotes(
   name,
   selectedIndexes,

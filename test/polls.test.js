@@ -14,6 +14,7 @@ import {
   loadPoll,
   recordPollVotes,
   resetPoll,
+  resetScores,
   validatePollName,
 } from '../services/polls.js';
 
@@ -22,7 +23,7 @@ test('poll command enforces the supported action choices', () => {
 
   assert.deepEqual(
     actionOption.choices.map((choice) => choice.value),
-    ['create', 'send', 'delete', 'reset', 'results', 'score'],
+    ['create', 'send', 'delete', 'reset', 'results'],
   );
 });
 
@@ -148,6 +149,21 @@ test('returns the top five cumulative quiz scores', () => {
   }
 
   assert.equal(getTopScores(5, dataDirectory).length, 5);
+});
+
+test('resets all cumulative quiz scores', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  createPoll('quiz1', 'Choose', 'A) Yes\nB) No', 'A)', dataDirectory);
+  recordPollVotes(
+    'quiz1',
+    ['0'],
+    { userId: 'user-1', username: 'Ada' },
+    dataDirectory,
+  );
+
+  resetScores(dataDirectory);
+
+  assert.deepEqual(getTopScores(5, dataDirectory), []);
 });
 
 test('deletes the poll file', () => {

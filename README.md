@@ -73,7 +73,7 @@ Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
 ```bash
 npm run register
 ```
-You should see `Registered 7 command(s): hello, roll, remind, coldcall, credit, setsection, poll`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
+You should see `Registered 8 command(s): hello, roll, remind, coldcall, credit, setsection, poll, score`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
 
 ### 5. Run the bot
 ```bash
@@ -108,10 +108,11 @@ In your Discord test server, type `/hello`. The bot should reply "Hello from you
 ## Polls
 
 Use `/poll name:<name> action:create` to define a poll, then use the `send`,
-`results`, `reset`, `delete`, or `score` actions to manage it. Poll administration
+`results`, `reset`, or `delete` actions to manage it. Poll administration
 is restricted to `COLD_CALL_USER_ID`; ballots are available to everyone, and
 each poll records which user IDs have submitted. Quiz scores are stored
-separately in `data/poll-scores.json`.
+separately in `data/poll-scores.json`. Use `/score` to view scores and
+`/score reset` as the configured instructor to clear all scores.
 
 ## Troubleshooting
 - **Interactions Endpoint URL won't save** → the app isn't running, or the port isn't public. Check both.
