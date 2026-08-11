@@ -1,4 +1,4 @@
-name,picked
-student1,0
-student2,0
-student3,0
+name,answered,absent,passed
+student1,0,0,0
+student2,0,0,0
+student3,0,0,0

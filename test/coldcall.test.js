@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import {
   createColdcallResponse,
+  incrementStudentResult,
   isAuthorizedUser,
   loadStudentNames,
   selectRandomStudent,
@@ -27,6 +28,26 @@ test('returns the selected student in the command response', () => {
   const response = createColdcallResponse(['Ada', 'Grace'], () => 0);
 
   assert.equal(response.data.content, 'Ada has been selected');
+  assert.equal(response.data.components[0].components[0].options.length, 3);
+  assert.deepEqual(
+    response.data.components[0].components[0].options.map((option) => option.value),
+    ['answered', 'absent', 'passed'],
+  );
+});
+
+test('increments a student result and preserves other CSV columns', () => {
+  const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'students-'));
+  const studentsPath = path.join(tempDirectory, 'students.csv');
+  fs.writeFileSync(
+    studentsPath,
+    'name,email,answered,absent,passed\nAda,ada@example.com,1,0,2\nGrace,grace@example.com,0,0,0\n',
+  );
+
+  assert.equal(incrementStudentResult(0, 'answered', studentsPath), 'Ada');
+  assert.equal(
+    fs.readFileSync(studentsPath, 'utf8'),
+    'name,email,answered,absent,passed\nAda,ada@example.com,2,0,2\nGrace,grace@example.com,0,0,0\n',
+  );
 });
 
 test('authorizes the configured user in a server interaction', () => {
