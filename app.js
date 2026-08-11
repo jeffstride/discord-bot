@@ -12,47 +12,59 @@
 // in front of the /interactions route -- verifyKeyMiddleware needs the raw,
 // untouched request body to check the signature correctly.
 
-require('dotenv').config();
-const express = require('express');
-const {
+import 'dotenv/config';
+import express from 'express';
+import {
   InteractionType,
   InteractionResponseType,
   verifyKeyMiddleware,
-} = require('discord-interactions');
+} from 'discord-interactions';
+import { handleCommand } from './command-handler.js';
+import { loadAndScheduleReminders } from './services/reminders.js';
 
+// Create an express app
 const app = express();
+// Get port, or default to 3000
 const PORT = process.env.PORT || 3000;
 const PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY;
 
-app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), (req, res) => {
-  const { type, data } = req.body;
-
-  if (type === InteractionType.APPLICATION_COMMAND) {
-    const { name } = data;
-
-    if (name === 'hello') {
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: 'Hello from your Codespaces-hosted bot! 👋' },
-      });
-    }
-
-    // Unknown command name -- shouldn't normally happen if
-    // register-commands.js is the only thing registering commands.
-    console.error(`Unrecognized command: ${name}`);
-    return res.status(400).send({ error: 'Unknown command' });
-  }
-
-  console.error('Unhandled interaction type:', type);
-  return res.status(400).send({ error: 'Unknown interaction type' });
-});
+// The Reminders feature needs intialization
+loadAndScheduleReminders();
 
 // Handy for confirming the app is up when you visit the forwarded Codespaces
 // URL in a browser (Discord never hits this route -- it only calls /interactions).
 app.get('/', (req, res) => {
-  res.send('Bot is running. POST /interactions is the Discord endpoint.');
+  res.send('Discord bot is running. Use /interactions for Discord callbacks.');
+});
+
+/**
+ * Interactions endpoint URL where Discord will send HTTP requests
+ * Parse request body and verifies incoming requests using discord-interactions package
+ */
+app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async function (req, res) {
+  // Discord uses the interaction type to distinguish pings, slash commands,
+  // component clicks, modal submissions, and other interaction payloads.
+  const { type } = req.body;
+
+  /**
+   * Handle verification requests
+   */
+  if (type === InteractionType.PING) {
+    return res.send({ type: InteractionResponseType.PONG });
+  }
+
+  /**
+   * Handle slash command requests
+   * See https://discord.com/developers/docs/interactions/application-commands#slash-commands
+   */
+  if (type === InteractionType.APPLICATION_COMMAND) {
+    return handleCommand(req, res);
+  }
+
+  console.error('unknown interaction type', type);
+  return res.status(400).json({ error: 'unknown interaction type' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`);
+  console.log('Listening on port', PORT);
 });

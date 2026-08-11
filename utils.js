@@ -8,7 +8,7 @@ const DISCORD_API_BASE = 'https://discord.com/api/v10';
  * @param {string} endpoint - path relative to DISCORD_API_BASE, e.g. "applications/123/commands"
  * @param {object} options - fetch options (method, body, etc). body is auto-JSON-encoded if it's an object.
  */
-async function DiscordRequest(endpoint, options = {}) {
+export async function DiscordRequest(endpoint, options = {}) {
   const url = `${DISCORD_API_BASE}/${endpoint}`;
 
   if (options.body) {
@@ -31,5 +31,3 @@ async function DiscordRequest(endpoint, options = {}) {
 
   return response;
 }
-
-module.exports = { DiscordRequest };

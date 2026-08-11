@@ -2,6 +2,9 @@
 # keep `.env.example` devoid of the secret values
 .env
 
+# don't persiste reminders data
+data/reminders.json
+
 # Node
 node_modules/
 npm-debug.log*
