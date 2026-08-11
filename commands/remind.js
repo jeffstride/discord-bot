@@ -1,6 +1,10 @@
 import { InteractionResponseType } from 'discord-interactions';
-import { addReminder, createReminder, scheduleReminder } from '../reminders.js';
-import { deliverReminder } from '../reminder-delivery.js';
+import {
+  addReminder,
+  createReminder,
+  deliverReminder,
+  scheduleReminder,
+} from '../services/reminders.js';
 
 export const command = {
   name: 'remind',

@@ -20,7 +20,7 @@ import {
   verifyKeyMiddleware,
 } from 'discord-interactions';
 import { handleCommand } from './command-handler.js';
-import { loadAndScheduleReminders } from './reminder-delivery.js';
+import { loadAndScheduleReminders } from './services/reminders.js';
 
 // Create an express app
 const app = express();
@@ -28,6 +28,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY;
 
+// The Reminders feature needs intialization
 loadAndScheduleReminders();
 
 // Handy for confirming the app is up when you visit the forwarded Codespaces

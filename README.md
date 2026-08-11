@@ -30,6 +30,7 @@ what you'll eventually use for the class project.
 | `command-handler.js` | Dispatches slash commands to handlers by command name |
 | `commands/` | Keeps each slash command definition and handler together |
 | `commands.js` | Collects the command definitions for registration |
+| `services/reminders.js` | Persists, schedules, and delivers reminders |
 | `register-commands.js` | One-time script that tells Discord about the commands |
 | `utils.js` | Small helper for calling Discord's API with your bot token |
 | `.devcontainer/devcontainer.json` | Tells Codespaces what to install and which port to expose |

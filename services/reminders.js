@@ -2,10 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+import { DiscordRequest } from '../utils.js';
+
+const servicesDirectory = path.dirname(fileURLToPath(import.meta.url));
 
 function resolveStoragePath(storagePath) {
-  return storagePath || process.env.REMINDERS_FILE || path.join(currentDirectory, 'data', 'reminders.json');
+  return storagePath
+    || process.env.REMINDERS_FILE
+    || path.join(servicesDirectory, '..', 'data', 'reminders.json');
 }
 
 function ensureStorageDirectory(storagePath) {
@@ -78,4 +82,29 @@ export function scheduleReminder(reminder, onDue, storagePath) {
       onDue(persistedReminder);
     }
   }, delay);
+}
+
+export async function sendDiscordMessage(channelId, content) {
+  if (!channelId) {
+    return;
+  }
+
+  try {
+    await DiscordRequest(`channels/${channelId}/messages`, {
+      method: 'POST',
+      body: { content },
+    });
+  } catch (error) {
+    console.error('Failed to send reminder message:', error.message);
+  }
+}
+
+export async function deliverReminder(reminder) {
+  await sendDiscordMessage(reminder.channelId, `⏰ Reminder: ${reminder.message}`);
+}
+
+export function loadAndScheduleReminders() {
+  loadReminders().forEach((reminder) => {
+    scheduleReminder(reminder, deliverReminder);
+  });
 }
