@@ -114,7 +114,21 @@ export function loadScores(dataDirectory = defaultDataDirectory) {
     return { users: [] };
   }
   const scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
-  return { users: Array.isArray(scores.users) ? scores.users : [] };
+  return {
+    users: Array.isArray(scores.users)
+      ? scores.users.map((user) => {
+        const correct = Number.isInteger(user.correct) ? user.correct : Number(user.score) || 0;
+        const incorrect = Number.isInteger(user.incorrect) ? user.incorrect : 0;
+        return {
+          userId: user.userId,
+          username: user.username,
+          correct,
+          incorrect,
+          score: (3 * correct) - incorrect,
+        };
+      })
+      : [],
+  };
 }
 
 function saveScores(scores, dataDirectory = defaultDataDirectory) {
@@ -122,22 +136,42 @@ function saveScores(scores, dataDirectory = defaultDataDirectory) {
   fs.writeFileSync(getScoresPath(dataDirectory), JSON.stringify(scores, null, 2));
 }
 
-function incrementUserScore(voter, dataDirectory) {
+function updateUserScore(voter, isCorrect, dataDirectory) {
   const scores = loadScores(dataDirectory);
   let user = scores.users.find((candidate) => candidate.userId === voter.userId);
 
   if (!user) {
-    user = { userId: voter.userId, username: voter.username, score: 0 };
+    user = {
+      userId: voter.userId,
+      username: voter.username,
+      correct: 0,
+      incorrect: 0,
+      score: 0,
+    };
     scores.users.push(user);
   }
 
   user.username = voter.username;
-  user.score += 1;
+  if (isCorrect) {
+    user.correct += 1;
+  } else {
+    user.incorrect += 1;
+  }
+  user.score = (3 * user.correct) - user.incorrect;
   saveScores(scores, dataDirectory);
 }
 
+export function getUserScoreRecord(userId, dataDirectory = defaultDataDirectory) {
+  return loadScores(dataDirectory).users.find((user) => user.userId === userId) || {
+    userId,
+    correct: 0,
+    incorrect: 0,
+    score: 0,
+  };
+}
+
 export function getUserScore(userId, dataDirectory = defaultDataDirectory) {
-  return loadScores(dataDirectory).users.find((user) => user.userId === userId)?.score || 0;
+  return getUserScoreRecord(userId, dataDirectory).score;
 }
 
 export function getTopScores(limit = 5, dataDirectory = defaultDataDirectory) {
@@ -182,8 +216,8 @@ export function recordPollVotes(
     && uniqueIndexes.every((index, position) => index === poll.correctOptionIndexes[position]);
 
   savePoll(poll, dataDirectory);
-  if (isCorrect) {
-    incrementUserScore(voter, dataDirectory);
+  if (isQuiz) {
+    updateUserScore(voter, isCorrect, dataDirectory);
   }
 
   return { poll, isQuiz, isCorrect };

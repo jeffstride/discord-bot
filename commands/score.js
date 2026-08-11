@@ -7,7 +7,7 @@ import { isAuthorizedUser } from './coldcall.js';
 import { getInvokingUser } from './poll.js';
 import {
   getTopScores,
-  getUserScore,
+  getUserScoreRecord,
   resetScores,
 } from '../services/polls.js';
 
@@ -64,11 +64,16 @@ export function handleCommand(req) {
       ? 'No quiz scores have been recorded.'
       : [
         'Top quiz scores:',
-        ...topScores.map((user, index) => `${index + 1}. ${user.username}: ${user.score}`),
+        ...topScores.map((user, index) => (
+          `${index + 1}. ${user.username}: ${user.score} `
+          + `(${user.correct} correct, ${user.incorrect} incorrect)`
+        )),
       ].join('\n'));
   }
 
+  const score = getUserScoreRecord(invokingUser.userId);
   return response(
-    `${invokingUser.username || 'Your'} score: ${getUserScore(invokingUser.userId)}`,
+    `${invokingUser.username || 'Your'} score: ${score.score} `
+    + `(${score.correct} correct, ${score.incorrect} incorrect)`,
   );
 }

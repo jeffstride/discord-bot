@@ -10,6 +10,7 @@ import {
   deletePoll,
   getTopScores,
   getUserScore,
+  getUserScoreRecord,
   getPollPath,
   loadPoll,
   recordPollVotes,
@@ -108,7 +109,14 @@ test('matches quiz answers by case-insensitive option prefix', () => {
 
   assert.equal(result.isCorrect, true);
   assert.deepEqual(loadPoll('quiz1', dataDirectory).correctOptionIndexes, [0, 2]);
-  assert.equal(getUserScore('user-1', dataDirectory), 1);
+  assert.equal(getUserScore('user-1', dataDirectory), 3);
+  assert.deepEqual(getUserScoreRecord('user-1', dataDirectory), {
+    userId: 'user-1',
+    username: 'Ada',
+    correct: 1,
+    incorrect: 0,
+    score: 3,
+  });
 });
 
 test('rejects a correct answer prefix that matches no option', () => {
@@ -132,7 +140,34 @@ test('does not score a partial or extra quiz selection as correct', () => {
   );
 
   assert.equal(result.isCorrect, false);
-  assert.equal(getUserScore('user-1', dataDirectory), 0);
+  assert.equal(getUserScore('user-1', dataDirectory), -1);
+  assert.deepEqual(getUserScoreRecord('user-1', dataDirectory), {
+    userId: 'user-1',
+    username: 'Ada',
+    correct: 0,
+    incorrect: 1,
+    score: -1,
+  });
+});
+
+test('persists correct and incorrect counts with the calculated score', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  const voter = { userId: 'user-1', username: 'Ada' };
+  createPoll('quiz1', 'Choose', 'A) Yes\nB) No', 'A)', dataDirectory);
+  createPoll('quiz2', 'Choose', 'A) Yes\nB) No', 'A)', dataDirectory);
+  recordPollVotes('quiz1', ['0'], voter, dataDirectory);
+  recordPollVotes('quiz2', ['1'], voter, dataDirectory);
+
+  const savedScores = JSON.parse(
+    fs.readFileSync(path.join(dataDirectory, 'poll-scores.json'), 'utf8'),
+  );
+  assert.deepEqual(savedScores.users[0], {
+    userId: 'user-1',
+    username: 'Ada',
+    correct: 1,
+    incorrect: 1,
+    score: 2,
+  });
 });
 
 test('returns the top five cumulative quiz scores', () => {

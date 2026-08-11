@@ -112,7 +112,8 @@ Use `/poll name:<name> action:create` to define a poll, then use the `send`,
 is restricted to `COLD_CALL_USER_ID`; ballots are available to everyone, and
 each poll records which user IDs have submitted. Quiz scores are stored
 separately in `data/poll-scores.json`. Use `/score` to view scores and
-`/score reset` as the configured instructor to clear all scores.
+`/score reset` as the configured instructor to clear all scores. Each score is
+calculated as `3 × correct − incorrect`.
 
 ## Troubleshooting
 - **Interactions Endpoint URL won't save** → the app isn't running, or the port isn't public. Check both.
