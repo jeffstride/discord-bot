@@ -2,9 +2,14 @@ import {
   COLD_CALL_COMPONENT_PREFIX,
   handleComponent as handleColdcallComponent,
 } from './commands/coldcall.js';
+import {
+  CREDIT_COMPONENT_ID,
+  handleComponent as handleCreditComponent,
+} from './commands/credit.js';
 
 const componentHandlers = {
   [COLD_CALL_COMPONENT_PREFIX]: handleColdcallComponent,
+  [CREDIT_COMPONENT_ID]: (_componentId, req) => handleCreditComponent(req),
 };
 
 export function handleComponent(req, res) {

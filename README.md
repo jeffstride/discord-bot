@@ -71,7 +71,7 @@ Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
 ```bash
 npm run register
 ```
-You should see `Registered 4 command(s): hello, roll, remind, coldcall`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
+You should see `Registered 5 command(s): hello, roll, remind, coldcall, credit`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
 
 ### 5. Run the bot
 ```bash

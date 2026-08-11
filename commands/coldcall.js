@@ -75,7 +75,7 @@ export function loadStudentNames(studentsPath = defaultStudentsPath) {
   return loadStudents(studentsPath).map((student) => student.name);
 }
 
-function loadStudents(studentsPath = defaultStudentsPath) {
+export function loadStudents(studentsPath = defaultStudentsPath) {
   const studentsCsv = loadStudentsCsv(studentsPath);
   return studentsCsv.rows
     .map((row, rowIndex) => ({
