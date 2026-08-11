@@ -21,6 +21,7 @@ import {
 } from 'discord-interactions';
 import { handleCommand } from './command-handler.js';
 import { handleComponent } from './component-handler.js';
+import { handleModalSubmit } from './modal-handler.js';
 import { loadAndScheduleReminders } from './services/reminders.js';
 
 // Create an express app
@@ -64,6 +65,10 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async function (req, 
 
   if (type === InteractionType.MESSAGE_COMPONENT) {
     return handleComponent(req, res);
+  }
+
+  if (type === InteractionType.MODAL_SUBMIT) {
+    return handleModalSubmit(req, res);
   }
 
   console.error('unknown interaction type', type);

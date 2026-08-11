@@ -4,6 +4,8 @@ import { command as remind, handleCommand as handleRemind } from './commands/rem
 import { command as coldcall, handleCommand as handleColdcall } from './commands/coldcall.js';
 import { command as credit, handleCommand as handleCredit } from './commands/credit.js';
 import { command as setSection, handleCommand as handleSetSection } from './commands/setsection.js';
+import { command as poll, handleCommand as handlePoll } from './commands/poll.js';
+import { command as score, handleCommand as handleScore } from './commands/score.js';
 
 const commandHandlers = {
   [hello.name]: handleHello,
@@ -12,14 +14,33 @@ const commandHandlers = {
   [coldcall.name]: handleColdcall,
   [credit.name]: handleCredit,
   [setSection.name]: handleSetSection,
+  [poll.name]: handlePoll,
+  [score.name]: handleScore,
 };
 
-export function handleCommand(req, res) {
+export async function handleCommand(req, res) {
   const { name } = req.body.data;
   const commandHandler = commandHandlers[name];
 
   if (commandHandler) {
-    return res.send(commandHandler(req));
+    const result = commandHandler(req);
+
+    if (!result) {
+      console.error(`Command could not be handled: ${name}`);
+      return res.status(400).json({ error: 'Command could not be handled' });
+    }
+
+    res.send(result.response || result);
+
+    if (result.afterResponse) {
+      try {
+        await result.afterResponse();
+      } catch (error) {
+        console.error('Error updating command response:', error.message);
+      }
+    }
+
+    return;
   }
 
   console.error(`Unrecognized command: ${name}`);
