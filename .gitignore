@@ -5,6 +5,7 @@
 # don't persiste reminders data
 data/reminders.json
 data/poll-*.json
+data/poll_*.json
 
 # Node
 node_modules/

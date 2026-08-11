@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const servicesDirectory = path.dirname(fileURLToPath(import.meta.url));
 const defaultDataDirectory = path.join(servicesDirectory, '..', 'data');
 const POLL_NAME_PATTERN = /^[a-zA-Z0-9_-]{1,50}$/;
-const SCORES_FILENAME = 'poll-scores.json';
+const SCORES_FILENAME = 'poll_scores.json';
 
 export function validatePollName(name) {
   return typeof name === 'string' && POLL_NAME_PATTERN.test(name);
