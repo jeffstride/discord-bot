@@ -13,6 +13,13 @@ const defaultStudentsPath = path.join(commandsDirectory, '..', 'data', 'students
 export const COLD_CALL_COMPONENT_PREFIX = 'coldcall_result:';
 const RESULT_COLUMNS = ['answered', 'absent', 'passed'];
 
+export function formatDate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export const command = {
   name: 'coldcall',
   description: 'Randomly select a student',
@@ -77,12 +84,22 @@ export function loadStudentNames(studentsPath = defaultStudentsPath) {
 
 export function loadStudents(studentsPath = defaultStudentsPath) {
   const studentsCsv = loadStudentsCsv(studentsPath);
+  const lastAbsentIndex = studentsCsv.normalizedHeaders.indexOf('last-absent');
   return studentsCsv.rows
     .map((row, rowIndex) => ({
       name: row[studentsCsv.nameIndex]?.trim(),
       rowIndex,
+      lastAbsent: lastAbsentIndex === -1 ? '' : row[lastAbsentIndex]?.trim(),
     }))
     .filter((student) => student.name);
+}
+
+export function loadEligibleStudents(
+  studentsPath = defaultStudentsPath,
+  today = formatDate(),
+) {
+  return loadStudents(studentsPath)
+    .filter((student) => student.lastAbsent !== today);
 }
 
 export function selectRandomStudent(names, random = Math.random) {
@@ -139,7 +156,12 @@ function escapeCsvValue(value) {
   return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-export function incrementStudentResult(rowIndex, result, studentsPath = defaultStudentsPath) {
+export function incrementStudentResult(
+  rowIndex,
+  result,
+  studentsPath = defaultStudentsPath,
+  today = formatDate(),
+) {
   if (!RESULT_COLUMNS.includes(result)) {
     throw new Error(`Unknown cold-call result: ${result}`);
   }
@@ -158,6 +180,19 @@ export function incrementStudentResult(rowIndex, result, studentsPath = defaultS
 
   const currentValue = Number.parseInt(studentRow[resultIndex] || '0', 10);
   studentRow[resultIndex] = String((Number.isNaN(currentValue) ? 0 : currentValue) + 1);
+
+  if (result === 'absent') {
+    let lastAbsentIndex = studentsCsv.normalizedHeaders.indexOf('last-absent');
+
+    if (lastAbsentIndex === -1) {
+      lastAbsentIndex = studentsCsv.headers.length;
+      studentsCsv.headers.push('last-absent');
+      studentsCsv.normalizedHeaders.push('last-absent');
+      studentsCsv.rows.forEach((row) => row.push(''));
+    }
+
+    studentRow[lastAbsentIndex] = today;
+  }
 
   const outputRows = [studentsCsv.headers, ...studentsCsv.rows]
     .map((row) => row.map(escapeCsvValue).join(','));
@@ -183,7 +218,7 @@ export function handleCommand(req) {
   }
 
   try {
-    return createColdcallResponse(loadStudents());
+    return createColdcallResponse(loadEligibleStudents());
   } catch (error) {
     console.error('Failed to select a student:', error.message);
     return {

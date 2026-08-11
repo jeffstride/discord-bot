@@ -6,8 +6,10 @@ import path from 'node:path';
 
 import {
   createColdcallResponse,
+  formatDate,
   incrementStudentResult,
   isAuthorizedUser,
+  loadEligibleStudents,
   loadStudentNames,
   selectRandomStudent,
 } from '../commands/coldcall.js';
@@ -48,6 +50,40 @@ test('increments a student result and preserves other CSV columns', () => {
     fs.readFileSync(studentsPath, 'utf8'),
     'name,email,answered,absent,passed\nAda,ada@example.com,2,0,2\nGrace,grace@example.com,0,0,0\n',
   );
+});
+
+test('records today when a student is absent', () => {
+  const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'students-'));
+  const studentsPath = path.join(tempDirectory, 'students.csv');
+  fs.writeFileSync(
+    studentsPath,
+    'name,answered,absent,passed\nAda,1,0,2\n',
+  );
+
+  incrementStudentResult(0, 'absent', studentsPath, '2026-08-11');
+
+  assert.equal(
+    fs.readFileSync(studentsPath, 'utf8'),
+    'name,answered,absent,passed,last-absent\nAda,1,1,2,2026-08-11\n',
+  );
+});
+
+test('excludes students who were already absent today', () => {
+  const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'students-'));
+  const studentsPath = path.join(tempDirectory, 'students.csv');
+  fs.writeFileSync(
+    studentsPath,
+    'name,answered,absent,passed,last-absent\nAda,0,1,0,2026-08-11\nGrace,0,1,0,2026-08-10\nLinus,0,0,0,\n',
+  );
+
+  assert.deepEqual(
+    loadEligibleStudents(studentsPath, '2026-08-11').map((student) => student.name),
+    ['Grace', 'Linus'],
+  );
+});
+
+test('formats dates for CSV storage', () => {
+  assert.equal(formatDate(new Date(2026, 7, 11)), '2026-08-11');
 });
 
 test('authorizes the configured user in a server interaction', () => {
