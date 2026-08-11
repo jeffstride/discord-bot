@@ -1,11 +1,13 @@
 import { command as hello, handleCommand as handleHello } from './commands/hello.js';
 import { command as roll, handleCommand as handleRoll } from './commands/roll.js';
 import { command as remind, handleCommand as handleRemind } from './commands/remind.js';
+import { command as coldcall, handleCommand as handleColdcall } from './commands/coldcall.js';
 
 const commandHandlers = {
   [hello.name]: handleHello,
   [roll.name]: handleRoll,
   [remind.name]: handleRemind,
+  [coldcall.name]: handleColdcall,
 };
 
 export function handleCommand(req, res) {
