@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { command } from '../commands/poll.js';
+import { command, createModal } from '../commands/poll.js';
 import {
   createPoll,
   deletePoll,
@@ -28,11 +28,40 @@ test('poll command enforces the supported action choices', () => {
   );
 });
 
+test('poll modal provides the supported timeout choices', () => {
+  const modal = createModal('quiz1');
+  const timeoutLabel = modal.data.components.find((component) => (
+    component.component?.custom_id === 'poll_timeout'
+  ));
+
+  assert.deepEqual(
+    timeoutLabel.component.options.map((option) => [option.label, option.value]),
+    [
+      ['none', '0'],
+      ['20 seconds', '20000'],
+      ['30 seconds', '30000'],
+      ['40 seconds', '40000'],
+      ['1 minute', '60000'],
+    ],
+  );
+});
+
 test('validates poll names for safe filenames', () => {
   assert.equal(validatePollName('quiz1'), true);
   assert.equal(validatePollName('quiz-1_review'), true);
   assert.equal(validatePollName('../quiz'), false);
   assert.equal(validatePollName('quiz one'), false);
+});
+
+test('persists a poll timeout', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  createPoll('quiz1', 'Choose', 'Yes\nNo', '', dataDirectory, 30000);
+
+  assert.equal(loadPoll('quiz1', dataDirectory).timeoutMs, 30000);
+  assert.throws(
+    () => createPoll('quiz2', 'Choose', 'Yes\nNo', '', dataDirectory, 15000),
+    /Invalid poll timeout/,
+  );
 });
 
 test('creates a poll and records aggregate votes by user', () => {
@@ -189,7 +218,7 @@ test('persists correct and incorrect counts with the calculated score', () => {
   recordPollVotes('quiz2', ['1'], voter, dataDirectory);
 
   const savedScores = JSON.parse(
-    fs.readFileSync(path.join(dataDirectory, 'poll-scores.json'), 'utf8'),
+    fs.readFileSync(path.join(dataDirectory, 'poll_scores.json'), 'utf8'),
   );
   assert.deepEqual(savedScores.users[0], {
     userId: 'user-1',

@@ -23,7 +23,9 @@ export const POLL_VOTE_COMPONENT_PREFIX = 'poll_vote:';
 const PROMPT_INPUT_ID = 'poll_prompt';
 const ANSWERS_INPUT_ID = 'poll_answers';
 const CORRECT_ANSWER_INPUT_ID = 'poll_correct_answer';
+const TIMEOUT_INPUT_ID = 'poll_timeout';
 const POLL_ACTIONS = ['create', 'send', 'delete', 'reset', 'results'];
+const activeBallotTimers = new Map();
 
 export const command = {
   name: 'poll',
@@ -60,7 +62,7 @@ function getOption(req, name) {
   return req.body.data.options?.find((option) => option.name === name)?.value;
 }
 
-function createModal(name) {
+export function createModal(name) {
   return {
     type: InteractionResponseType.MODAL,
     data: {
@@ -68,47 +70,86 @@ function createModal(name) {
       title: `Create poll: ${name}`.slice(0, 45),
       components: [
         {
-          type: MessageComponentTypes.ACTION_ROW,
-          components: [{
+          type: MessageComponentTypes.LABEL,
+          label: 'Prompt text',
+          component: {
             type: MessageComponentTypes.INPUT_TEXT,
             custom_id: PROMPT_INPUT_ID,
             style: 1,
-            label: 'Prompt text',
             required: true,
             max_length: 1000,
-          }],
+          },
         },
         {
-          type: MessageComponentTypes.ACTION_ROW,
-          components: [{
+          type: MessageComponentTypes.LABEL,
+          label: 'Answers (one per line)',
+          component: {
             type: MessageComponentTypes.INPUT_TEXT,
             custom_id: ANSWERS_INPUT_ID,
             style: 2,
-            label: 'Answers (one per line)',
             required: true,
             max_length: 4000,
-          }],
+          },
         },
         {
-          type: MessageComponentTypes.ACTION_ROW,
-          components: [{
+          type: MessageComponentTypes.LABEL,
+          label: 'Correct option numbers (optional)',
+          component: {
             type: MessageComponentTypes.INPUT_TEXT,
             custom_id: CORRECT_ANSWER_INPUT_ID,
             style: 1,
-            label: 'Correct option numbers (optional)',
             required: false,
             max_length: 100,
             placeholder: 'Example: 1,3',
-          }],
+          },
+        },
+        {
+          type: MessageComponentTypes.LABEL,
+          label: 'Timeout',
+          component: {
+            type: MessageComponentTypes.STRING_SELECT,
+            custom_id: TIMEOUT_INPUT_ID,
+            min_values: 1,
+            max_values: 1,
+            options: [
+              { label: 'none', value: '0', default: true },
+              { label: '20 seconds', value: '20000' },
+              { label: '30 seconds', value: '30000' },
+              { label: '40 seconds', value: '40000' },
+              { label: '1 minute', value: '60000' },
+            ],
+          },
         },
       ],
     },
   };
 }
 
-function createSendResponse(name) {
-  loadPoll(name);
-  return {
+function scheduleMessageTimeout(endpoint, timeoutMs, content, onExpire) {
+  const timer = setTimeout(() => {
+    onExpire?.();
+    DiscordRequest(endpoint, {
+      method: 'PATCH',
+      body: { content, components: [] },
+    }).catch((error) => {
+      console.error('Failed to expire poll interaction:', error.message);
+    });
+  }, timeoutMs);
+  timer.unref?.();
+  return timer;
+}
+
+function getOriginalResponseEndpoint(req) {
+  const applicationId = process.env.DISCORD_APPLICATION_ID;
+  if (!applicationId || !req.body.token) {
+    throw new Error('Unable to schedule the poll timeout');
+  }
+  return `webhooks/${applicationId}/${req.body.token}/messages/@original`;
+}
+
+function createSendResponse(name, req) {
+  const poll = loadPoll(name);
+  const response = {
     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
     data: {
       content: `Poll: ${name}`,
@@ -121,6 +162,22 @@ function createSendResponse(name) {
           style: ButtonStyleTypes.PRIMARY,
         }],
       }],
+    },
+  };
+
+  if (!poll.timeoutMs) {
+    return response;
+  }
+
+  const endpoint = getOriginalResponseEndpoint(req);
+  return {
+    response,
+    afterResponse: () => {
+      scheduleMessageTimeout(
+        endpoint,
+        poll.timeoutMs,
+        `Poll: ${name}\nThis poll is closed.`,
+      );
     },
   };
 }
@@ -163,7 +220,7 @@ export function handleCommand(req) {
 
   try {
     if (action === 'send') {
-      return createSendResponse(name);
+      return createSendResponse(name, req);
     }
     if (action === 'delete') {
       deletePoll(name);
@@ -181,8 +238,10 @@ export function handleCommand(req) {
 
 function modalInputValue(req, inputId) {
   return req.body.data.components
-    .flatMap((row) => row.components)
-    .find((input) => input.custom_id === inputId)?.value;
+    .flatMap((container) => (
+      container.component ? [container.component] : container.components || []
+    ))
+    .find((input) => input.custom_id === inputId);
 }
 
 export function handleModalSubmit(modalId, req) {
@@ -194,9 +253,11 @@ export function handleModalSubmit(modalId, req) {
     const name = modalId.slice(POLL_CREATE_MODAL_PREFIX.length);
     createPoll(
       name,
-      modalInputValue(req, PROMPT_INPUT_ID),
-      modalInputValue(req, ANSWERS_INPUT_ID),
-      modalInputValue(req, CORRECT_ANSWER_INPUT_ID),
+      modalInputValue(req, PROMPT_INPUT_ID)?.value,
+      modalInputValue(req, ANSWERS_INPUT_ID)?.value,
+      modalInputValue(req, CORRECT_ANSWER_INPUT_ID)?.value,
+      undefined,
+      modalInputValue(req, TIMEOUT_INPUT_ID)?.values?.[0],
     );
     return message(`Poll ${name} was created.`, true);
   } catch (error) {
@@ -209,12 +270,17 @@ export function handleOpenComponent(componentId, req) {
     const name = componentId.slice(POLL_OPEN_COMPONENT_PREFIX.length);
     const poll = loadPoll(name);
     const { userId } = getInvokingUser(req);
+    const ballotKey = `${name}:${userId}`;
 
     if (hasVoted(name, userId)) {
       return message('You have already answered this poll.', true);
     }
 
-    return {
+    if (activeBallotTimers.has(ballotKey)) {
+      return message('You already have an active ballot for this poll.', true);
+    }
+
+    const response = {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {
         content: poll.prompt,
@@ -235,6 +301,24 @@ export function handleOpenComponent(componentId, req) {
         }],
       },
     };
+
+    if (!poll.timeoutMs) {
+      return response;
+    }
+
+    const endpoint = getOriginalResponseEndpoint(req);
+    return {
+      response,
+      afterResponse: () => {
+        const timer = scheduleMessageTimeout(
+          endpoint,
+          poll.timeoutMs,
+          `${poll.prompt}\nTime expired. No response was recorded.`,
+          () => activeBallotTimers.delete(ballotKey),
+        );
+        activeBallotTimers.set(ballotKey, timer);
+      },
+    };
   } catch (error) {
     return message(error.message, true);
   }
@@ -251,6 +335,12 @@ export function handleVoteComponent(componentId, req) {
 
     const selectedIndexes = req.body.data.values || [];
     const result = recordPollVotes(name, selectedIndexes, getInvokingUser(req));
+    const ballotKey = `${name}:${getInvokingUser(req).userId}`;
+    const ballotTimer = activeBallotTimers.get(ballotKey);
+    if (ballotTimer) {
+      clearTimeout(ballotTimer);
+      activeBallotTimers.delete(ballotKey);
+    }
     const selectedOption = result.poll.options[Number.parseInt(selectedIndexes[0], 10)].text;
     const outcome = result.isQuiz
       ? (result.isCorrect ? '✅ Correct' : '❌ Incorrect')

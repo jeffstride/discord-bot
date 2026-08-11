@@ -111,7 +111,7 @@ Use `/poll name:<name> action:create` to define a poll, then use the `send`,
 `results`, `reset`, or `delete` actions to manage it. Poll administration
 is restricted to `COLD_CALL_USER_ID`; ballots are available to everyone, and
 each poll records which user IDs have submitted. Quiz scores are stored
-separately in `data/poll-scores.json`. Use `/score` to view scores and
+separately in `data/poll_scores.json`. Use `/score` to view scores and
 `/score reset` as the configured instructor to clear all scores. Each score is
 calculated as `3 × correct − incorrect`.
 

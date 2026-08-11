@@ -18,12 +18,29 @@ const commandHandlers = {
   [score.name]: handleScore,
 };
 
-export function handleCommand(req, res) {
+export async function handleCommand(req, res) {
   const { name } = req.body.data;
   const commandHandler = commandHandlers[name];
 
   if (commandHandler) {
-    return res.send(commandHandler(req));
+    const result = commandHandler(req);
+
+    if (!result) {
+      console.error(`Command could not be handled: ${name}`);
+      return res.status(400).json({ error: 'Command could not be handled' });
+    }
+
+    res.send(result.response || result);
+
+    if (result.afterResponse) {
+      try {
+        await result.afterResponse();
+      } catch (error) {
+        console.error('Error updating command response:', error.message);
+      }
+    }
+
+    return;
   }
 
   console.error(`Unrecognized command: ${name}`);

@@ -6,6 +6,7 @@ const servicesDirectory = path.dirname(fileURLToPath(import.meta.url));
 const defaultDataDirectory = path.join(servicesDirectory, '..', 'data');
 const POLL_NAME_PATTERN = /^[a-zA-Z0-9_-]{1,50}$/;
 const SCORES_FILENAME = 'poll_scores.json';
+export const POLL_TIMEOUT_VALUES = [0, 20000, 30000, 40000, 60000];
 
 export function validatePollName(name) {
   return typeof name === 'string' && POLL_NAME_PATTERN.test(name);
@@ -31,6 +32,7 @@ export function loadPoll(name, dataDirectory = defaultDataDirectory) {
   const poll = JSON.parse(fs.readFileSync(pollPath, 'utf8'));
   poll.voters ||= [];
   poll.correctOptionIndexes ||= [];
+  poll.timeoutMs ||= 0;
   return poll;
 }
 
@@ -46,6 +48,7 @@ export function createPoll(
   answerLines,
   correctAnswerIndexes = '',
   dataDirectory = defaultDataDirectory,
+  timeoutMs = 0,
 ) {
   if (!validatePollName(name)) {
     throw new Error('Invalid poll name');
@@ -84,12 +87,18 @@ export function createPoll(
     throw new Error(`Correct answer numbers must be between 1 and ${answers.length}`);
   }
 
+  const normalizedTimeout = Number(timeoutMs);
+  if (!POLL_TIMEOUT_VALUES.includes(normalizedTimeout)) {
+    throw new Error('Invalid poll timeout');
+  }
+
   return savePoll({
     name,
     prompt: normalizedPrompt,
     options: answers.map((text) => ({ text, count: 0 })),
     correctOptionIndexes,
     voters: [],
+    timeoutMs: normalizedTimeout,
   }, dataDirectory);
 }
 
