@@ -1,8 +1,8 @@
-const { InteractionResponseType } = require('discord-interactions');
-const { addReminder, createReminder, scheduleReminder } = require('../reminders');
-const { deliverReminder } = require('../reminder-delivery');
+import { InteractionResponseType } from 'discord-interactions';
+import { addReminder, createReminder, scheduleReminder } from '../reminders.js';
+import { deliverReminder } from '../reminder-delivery.js';
 
-const command = {
+export const command = {
   name: 'remind',
   description: 'Schedule a reminder message for later',
   type: 1,
@@ -22,7 +22,7 @@ const command = {
   ],
 };
 
-function handleCommand(req) {
+export function handleCommand(req) {
   const { data, channel_id, member, user } = req.body;
   const { options = [] } = data;
   const minutesOption = options.find((option) => option.name === 'minutes');
@@ -61,5 +61,3 @@ function handleCommand(req) {
     },
   };
 }
-
-module.exports = { command, handleCommand };

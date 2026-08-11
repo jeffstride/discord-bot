@@ -1,7 +1,7 @@
-const { DiscordRequest } = require('./utils');
-const { loadReminders, scheduleReminder } = require('./reminders');
+import { DiscordRequest } from './utils.js';
+import { loadReminders, scheduleReminder } from './reminders.js';
 
-async function sendDiscordMessage(channelId, content) {
+export async function sendDiscordMessage(channelId, content) {
   if (!channelId) {
     return;
   }
@@ -16,14 +16,12 @@ async function sendDiscordMessage(channelId, content) {
   }
 }
 
-async function deliverReminder(reminder) {
+export async function deliverReminder(reminder) {
   await sendDiscordMessage(reminder.channelId, `⏰ Reminder: ${reminder.message}`);
 }
 
-function loadAndScheduleReminders() {
+export function loadAndScheduleReminders() {
   loadReminders().forEach((reminder) => {
     scheduleReminder(reminder, deliverReminder);
   });
 }
-
-module.exports = { deliverReminder, loadAndScheduleReminders, sendDiscordMessage };

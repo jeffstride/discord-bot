@@ -3,9 +3,9 @@
 // this script only tells Discord which commands exist; app.js is what
 // answers them when a user actually runs one.
 
-require('dotenv').config();
-const { DiscordRequest } = require('./utils');
-const { ALL_COMMANDS } = require('./commands');
+import 'dotenv/config';
+import { DiscordRequest } from './utils.js';
+import { ALL_COMMANDS } from './commands.js';
 
 async function registerGlobalCommands() {
   const appId = process.env.DISCORD_APPLICATION_ID;

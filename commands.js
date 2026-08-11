@@ -1,7 +1,5 @@
-const { command: helloCommand } = require('./commands/hello');
-const { command: rollCommand } = require('./commands/roll');
-const { command: remindCommand } = require('./commands/remind');
+import { command as helloCommand } from './commands/hello.js';
+import { command as rollCommand } from './commands/roll.js';
+import { command as remindCommand } from './commands/remind.js';
 
-const ALL_COMMANDS = [helloCommand, rollCommand, remindCommand];
-
-module.exports = { ALL_COMMANDS };
+export const ALL_COMMANDS = [helloCommand, rollCommand, remindCommand];

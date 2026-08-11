@@ -1,6 +1,6 @@
-const { InteractionResponseType } = require('discord-interactions');
+import { InteractionResponseType } from 'discord-interactions';
 
-const command = {
+export const command = {
   name: 'roll',
   description: 'Roll a die with the specified number of sides',
   type: 1,
@@ -14,7 +14,7 @@ const command = {
   ],
 };
 
-function handleCommand(req) {
+export function handleCommand(req) {
   const { options = [] } = req.body.data;
   const sidesOption = options.find((option) => option.name === 'sides');
   const sides = Number(sidesOption?.value);
@@ -34,5 +34,3 @@ function handleCommand(req) {
     data: { content: `🎲 You rolled a ${roll} (1-${sides})` },
   };
 }
-
-module.exports = { command, handleCommand };

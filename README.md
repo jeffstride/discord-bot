@@ -96,7 +96,7 @@ Click **Save Changes**. Discord immediately sends a test `PING` — if `app.js` 
 In your Discord test server, type `/hello`. The bot should reply "Hello from your Codespaces-hosted bot! 👋".
 
 ## Adding your own commands
-1. Add a module in `commands/` that exports `command` and `handleCommand`.
+1. Add an ES module in `commands/` that exports `command` and `handleCommand`.
 2. Import its definition in `commands.js` and its handler in `command-handler.js`.
 3. Run `npm run register` to update Discord.
 4. Restart the server (or just let `npm run dev` auto-restart it on save).

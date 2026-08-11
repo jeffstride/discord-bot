@@ -1,10 +1,10 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const os = require('node:os');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 
-const { createReminder, loadReminders, saveReminders, removeReminder } = require('../reminders');
+import { createReminder, loadReminders, saveReminders, removeReminder } from '../reminders.js';
 
 test('reminders round-trip through storage', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'reminders-'));

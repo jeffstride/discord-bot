@@ -1,15 +1,18 @@
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 
 function resolveStoragePath(storagePath) {
-  return storagePath || process.env.REMINDERS_FILE || path.join(__dirname, 'data', 'reminders.json');
+  return storagePath || process.env.REMINDERS_FILE || path.join(currentDirectory, 'data', 'reminders.json');
 }
 
 function ensureStorageDirectory(storagePath) {
   fs.mkdirSync(path.dirname(storagePath), { recursive: true });
 }
 
-function loadReminders(storagePath) {
+export function loadReminders(storagePath) {
   const resolvedPath = resolveStoragePath(storagePath);
 
   if (!fs.existsSync(resolvedPath)) {
@@ -26,13 +29,13 @@ function loadReminders(storagePath) {
   }
 }
 
-function saveReminders(reminders, storagePath) {
+export function saveReminders(reminders, storagePath) {
   const resolvedPath = resolveStoragePath(storagePath);
   ensureStorageDirectory(resolvedPath);
   fs.writeFileSync(resolvedPath, JSON.stringify(reminders, null, 2));
 }
 
-function createReminder({ id, channelId, userId, message, minutes, createdAt }) {
+export function createReminder({ id, channelId, userId, message, minutes, createdAt }) {
   const now = createdAt ?? Date.now();
 
   return {
@@ -46,20 +49,20 @@ function createReminder({ id, channelId, userId, message, minutes, createdAt }) 
   };
 }
 
-function addReminder(reminder, storagePath) {
+export function addReminder(reminder, storagePath) {
   const reminders = loadReminders(storagePath);
   reminders.push(reminder);
   saveReminders(reminders, storagePath);
   return reminder;
 }
 
-function removeReminder(id, storagePath) {
+export function removeReminder(id, storagePath) {
   const reminders = loadReminders(storagePath).filter((reminder) => reminder.id !== id);
   saveReminders(reminders, storagePath);
   return reminders;
 }
 
-function scheduleReminder(reminder, onDue, storagePath) {
+export function scheduleReminder(reminder, onDue, storagePath) {
   const delay = Math.max(0, reminder.dueAt - Date.now());
 
   return setTimeout(() => {
@@ -76,12 +79,3 @@ function scheduleReminder(reminder, onDue, storagePath) {
     }
   }, delay);
 }
-
-module.exports = {
-  addReminder,
-  createReminder,
-  loadReminders,
-  removeReminder,
-  saveReminders,
-  scheduleReminder,
-};

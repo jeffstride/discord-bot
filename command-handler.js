@@ -1,6 +1,6 @@
-const { command: hello, handleCommand: handleHello } = require('./commands/hello');
-const { command: roll, handleCommand: handleRoll } = require('./commands/roll');
-const { command: remind, handleCommand: handleRemind } = require('./commands/remind');
+import { command as hello, handleCommand as handleHello } from './commands/hello.js';
+import { command as roll, handleCommand as handleRoll } from './commands/roll.js';
+import { command as remind, handleCommand as handleRemind } from './commands/remind.js';
 
 const commandHandlers = {
   [hello.name]: handleHello,
@@ -8,7 +8,7 @@ const commandHandlers = {
   [remind.name]: handleRemind,
 };
 
-function handleCommand(req, res) {
+export function handleCommand(req, res) {
   const { name } = req.body.data;
   const commandHandler = commandHandlers[name];
 
@@ -19,5 +19,3 @@ function handleCommand(req, res) {
   console.error(`Unrecognized command: ${name}`);
   return res.status(400).send({ error: 'Unknown command' });
 }
-
-module.exports = { handleCommand };
