@@ -1,11 +1,17 @@
 import { command as hello, handleCommand as handleHello } from './commands/hello.js';
 import { command as roll, handleCommand as handleRoll } from './commands/roll.js';
 import { command as remind, handleCommand as handleRemind } from './commands/remind.js';
+import { command as coldcall, handleCommand as handleColdcall } from './commands/coldcall.js';
+import { command as credit, handleCommand as handleCredit } from './commands/credit.js';
+import { command as setSection, handleCommand as handleSetSection } from './commands/setsection.js';
 
 const commandHandlers = {
   [hello.name]: handleHello,
   [roll.name]: handleRoll,
   [remind.name]: handleRemind,
+  [coldcall.name]: handleColdcall,
+  [credit.name]: handleCredit,
+  [setSection.name]: handleSetSection,
 };
 
 export function handleCommand(req, res) {

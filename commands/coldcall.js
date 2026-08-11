@@ -1,0 +1,296 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import {
+  InteractionResponseFlags,
+  InteractionResponseType,
+  MessageComponentTypes,
+} from 'discord-interactions';
+import { getSectionPath, resolveActiveSection } from '../services/sections.js';
+
+const commandsDirectory = path.dirname(fileURLToPath(import.meta.url));
+const defaultStudentsPath = path.join(commandsDirectory, '..', 'data', 'students.csv');
+export const COLD_CALL_COMPONENT_PREFIX = 'coldcall_result:';
+const RESULT_COLUMNS = ['answered', 'absent', 'passed'];
+
+export function formatDate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export const command = {
+  name: 'coldcall',
+  description: 'Randomly select a student',
+  type: 1,
+};
+
+export function parseCsvRow(row) {
+  const values = [];
+  let value = '';
+  let inQuotes = false;
+
+  for (let index = 0; index < row.length; index += 1) {
+    const character = row[index];
+
+    if (character === '"') {
+      if (inQuotes && row[index + 1] === '"') {
+        value += '"';
+        index += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (character === ',' && !inQuotes) {
+      values.push(value);
+      value = '';
+    } else {
+      value += character;
+    }
+  }
+
+  values.push(value);
+  return values;
+}
+
+function loadStudentsCsv(studentsPath = defaultStudentsPath) {
+  const rows = fs.readFileSync(studentsPath, 'utf8')
+    .split(/\r?\n/)
+    .filter((row) => row.trim());
+
+  if (rows.length === 0) {
+    return { headers: [], rows: [] };
+  }
+
+  const headers = parseCsvRow(rows[0]).map((header) => header.trim());
+  const normalizedHeaders = headers.map((header) => header.toLowerCase());
+  const nameIndex = normalizedHeaders.indexOf('name');
+
+  if (nameIndex === -1) {
+    throw new Error('students.csv must contain a "name" column');
+  }
+
+  return {
+    headers,
+    rows: rows.slice(1).map((row) => parseCsvRow(row)),
+    nameIndex,
+    normalizedHeaders,
+  };
+}
+
+export function loadStudentNames(studentsPath = defaultStudentsPath) {
+  return loadStudents(studentsPath).map((student) => student.name);
+}
+
+export function loadStudents(studentsPath = defaultStudentsPath) {
+  const studentsCsv = loadStudentsCsv(studentsPath);
+  const lastAbsentIndex = studentsCsv.normalizedHeaders.indexOf('last-absent');
+  return studentsCsv.rows
+    .map((row, rowIndex) => ({
+      name: row[studentsCsv.nameIndex]?.trim(),
+      rowIndex,
+      lastAbsent: lastAbsentIndex === -1 ? '' : row[lastAbsentIndex]?.trim(),
+    }))
+    .filter((student) => student.name);
+}
+
+export function loadEligibleStudents(
+  studentsPath = defaultStudentsPath,
+  today = formatDate(),
+) {
+  return loadStudents(studentsPath)
+    .filter((student) => student.lastAbsent !== today);
+}
+
+export function selectRandomStudent(names, random = Math.random) {
+  if (names.length === 0) {
+    return undefined;
+  }
+
+  return names[Math.floor(random() * names.length)];
+}
+
+export function createColdcallResponse(
+  names,
+  random = Math.random,
+  sectionFilename = 'students.csv',
+) {
+  const selectableStudents = names
+    .map((student, rowIndex) => (
+      typeof student === 'string' ? { name: student, rowIndex } : student
+    ))
+    .filter((student) => student.name);
+  const student = selectableStudents[Math.floor(random() * selectableStudents.length)];
+
+  if (!student) {
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: { content: 'No students were found in data/students.csv.' },
+    };
+  }
+
+  return {
+    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+    data: {
+      content: `${student.name} has been selected`,
+      components: [
+        {
+          type: MessageComponentTypes.ACTION_ROW,
+          components: [
+            {
+              type: MessageComponentTypes.STRING_SELECT,
+              custom_id: `${COLD_CALL_COMPONENT_PREFIX}${encodeURIComponent(sectionFilename)}:${student.rowIndex}`,
+              placeholder: 'Record the result',
+              min_values: 1,
+              max_values: 1,
+              options: RESULT_COLUMNS.map((result) => ({
+                label: result,
+                value: result,
+              })),
+            },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+function escapeCsvValue(value) {
+  const text = String(value ?? '');
+  return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+export function incrementStudentResult(
+  rowIndex,
+  result,
+  studentsPath = defaultStudentsPath,
+  today = formatDate(),
+) {
+  if (!RESULT_COLUMNS.includes(result)) {
+    throw new Error(`Unknown cold-call result: ${result}`);
+  }
+
+  const studentsCsv = loadStudentsCsv(studentsPath);
+  const resultIndex = studentsCsv.normalizedHeaders.indexOf(result);
+  const studentRow = studentsCsv.rows[rowIndex];
+
+  if (resultIndex === -1) {
+    throw new Error(`students.csv must contain an "${result}" column`);
+  }
+
+  if (!studentRow || !studentRow[studentsCsv.nameIndex]?.trim()) {
+    throw new Error('The selected student no longer exists in students.csv');
+  }
+
+  const currentValue = Number.parseInt(studentRow[resultIndex] || '0', 10);
+  studentRow[resultIndex] = String((Number.isNaN(currentValue) ? 0 : currentValue) + 1);
+
+  if (result === 'absent') {
+    let lastAbsentIndex = studentsCsv.normalizedHeaders.indexOf('last-absent');
+
+    if (lastAbsentIndex === -1) {
+      lastAbsentIndex = studentsCsv.headers.length;
+      studentsCsv.headers.push('last-absent');
+      studentsCsv.normalizedHeaders.push('last-absent');
+      studentsCsv.rows.forEach((row) => row.push(''));
+    }
+
+    studentRow[lastAbsentIndex] = today;
+  }
+
+  const outputRows = [studentsCsv.headers, ...studentsCsv.rows]
+    .map((row) => row.map(escapeCsvValue).join(','));
+  fs.writeFileSync(studentsPath, `${outputRows.join('\n')}\n`);
+
+  return studentRow[studentsCsv.nameIndex].trim();
+}
+
+export function isAuthorizedUser(req, allowedUserId = process.env.COLD_CALL_USER_ID) {
+  const invokingUserId = req.body.member?.user?.id || req.body.user?.id;
+  return Boolean(allowedUserId) && invokingUserId === allowedUserId;
+}
+
+export function handleCommand(req) {
+  if (!isAuthorizedUser(req)) {
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: 'You are not authorized to use this command.',
+        flags: InteractionResponseFlags.EPHEMERAL,
+      },
+    };
+  }
+
+  try {
+    const section = resolveActiveSection(req);
+
+    if (section.status === 'required') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: '/setsection required before you can coldcall' },
+      };
+    }
+
+    if (section.status === 'missing') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: 'No CSV files were found in the data directory.' },
+      };
+    }
+
+    return createColdcallResponse(
+      loadEligibleStudents(section.path),
+      Math.random,
+      section.filename,
+    );
+  } catch (error) {
+    console.error('Failed to select a student:', error.message);
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: { content: 'Unable to load students from data/students.csv.' },
+    };
+  }
+}
+
+export function handleComponent(componentId, req) {
+  if (!isAuthorizedUser(req)) {
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: 'You are not authorized to use this menu.',
+        flags: InteractionResponseFlags.EPHEMERAL,
+      },
+    };
+  }
+
+  try {
+    const componentValue = componentId.slice(COLD_CALL_COMPONENT_PREFIX.length);
+    const separatorIndex = componentValue.lastIndexOf(':');
+    const sectionFilename = decodeURIComponent(componentValue.slice(0, separatorIndex));
+    const rowIndex = Number.parseInt(componentValue.slice(separatorIndex + 1), 10);
+    const result = req.body.data.values?.[0];
+    const studentName = incrementStudentResult(
+      rowIndex,
+      result,
+      getSectionPath(sectionFilename),
+    );
+
+    return {
+      type: InteractionResponseType.UPDATE_MESSAGE,
+      data: {
+        content: `${studentName} has been selected\nResult recorded: ${result}`,
+        components: [],
+      },
+    };
+  } catch (error) {
+    console.error('Failed to record cold-call result:', error.message);
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: 'Unable to update data/students.csv.',
+        flags: InteractionResponseFlags.EPHEMERAL,
+      },
+    };
+  }
+}

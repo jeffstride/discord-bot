@@ -20,6 +20,7 @@ import {
   verifyKeyMiddleware,
 } from 'discord-interactions';
 import { handleCommand } from './command-handler.js';
+import { handleComponent } from './component-handler.js';
 import { loadAndScheduleReminders } from './services/reminders.js';
 
 // Create an express app
@@ -59,6 +60,10 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async function (req, 
    */
   if (type === InteractionType.APPLICATION_COMMAND) {
     return handleCommand(req, res);
+  }
+
+  if (type === InteractionType.MESSAGE_COMPONENT) {
+    return handleComponent(req, res);
   }
 
   console.error('unknown interaction type', type);
