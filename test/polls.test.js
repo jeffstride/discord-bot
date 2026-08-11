@@ -41,7 +41,7 @@ test('creates a poll and records aggregate votes by user', () => {
 
   recordPollVotes(
     'quiz1',
-    ['0', '2'],
+    ['0'],
     { userId: 'user-1', username: 'Ada' },
     dataDirectory,
   );
@@ -55,7 +55,7 @@ test('creates a poll and records aggregate votes by user', () => {
   assert.deepEqual(loadPoll('quiz1', dataDirectory).options, [
     { text: 'First', count: 1 },
     { text: 'Second', count: 0 },
-    { text: 'Third', count: 2 },
+    { text: 'Third', count: 1 },
   ]);
   assert.deepEqual(loadPoll('quiz1', dataDirectory).voters, ['user-1', 'user-2']);
 });
@@ -105,7 +105,7 @@ test('resets counts without deleting the poll definition', () => {
   assert.deepEqual(poll.voters, []);
 });
 
-test('accepts comma-separated correct option numbers', () => {
+test('accepts any configured correct option number', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
   createPoll(
     'quiz1',
@@ -117,7 +117,7 @@ test('accepts comma-separated correct option numbers', () => {
 
   const result = recordPollVotes(
     'quiz1',
-    ['0', '2'],
+    ['2'],
     { userId: 'user-1', username: 'Ada' },
     dataDirectory,
   );
@@ -143,13 +143,13 @@ test('rejects a correct answer number outside the option range', () => {
   );
 });
 
-test('does not score a partial or extra quiz selection as correct', () => {
+test('scores an option outside the correct answer list as incorrect', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
   createPoll('quiz1', 'Choose', 'A) First\nA) Second\nB) Third', '1,2', dataDirectory);
 
   const result = recordPollVotes(
     'quiz1',
-    ['0'],
+    ['2'],
     { userId: 'user-1', username: 'Ada' },
     dataDirectory,
   );
@@ -163,6 +163,21 @@ test('does not score a partial or extra quiz selection as correct', () => {
     incorrect: 1,
     score: -1,
   });
+});
+
+test('rejects multiple selections in a poll response', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  createPoll('quiz1', 'Choose', 'A) First\nB) Second', '1', dataDirectory);
+
+  assert.throws(
+    () => recordPollVotes(
+      'quiz1',
+      ['0', '1'],
+      { userId: 'user-1', username: 'Ada' },
+      dataDirectory,
+    ),
+    /exactly one/,
+  );
 });
 
 test('persists correct and incorrect counts with the calculated score', () => {

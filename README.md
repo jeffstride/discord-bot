@@ -32,7 +32,7 @@ what you'll eventually use for the class project.
 | `commands.js` | Collects the command definitions for registration |
 | `services/reminders.js` | Persists, schedules, and delivers reminders |
 | `services/sections.js` | Discovers CSV sections and remembers the active section per server |
-| `services/polls.js` | Persists poll definitions and anonymous aggregate counts |
+| `services/polls.js` | Persists poll definitions, respondents, counts, and quiz scores |
 | `data/students.csv` | Supplies names for the `/coldcall` command |
 | `register-commands.js` | One-time script that tells Discord about the commands |
 | `utils.js` | Small helper for calling Discord's API with your bot token |

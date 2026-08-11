@@ -208,6 +208,10 @@ export function recordPollVotes(
     selectedIndexes.map((value) => Number.parseInt(value, 10)),
   )].toSorted((left, right) => left - right);
 
+  if (uniqueIndexes.length !== 1) {
+    throw new Error('Select exactly one poll answer');
+  }
+
   uniqueIndexes.forEach((index) => {
     if (!Number.isInteger(index) || !poll.options[index]) {
       throw new Error('Invalid poll selection');
@@ -217,9 +221,7 @@ export function recordPollVotes(
 
   poll.voters.push(voter.userId);
   const isQuiz = poll.correctOptionIndexes.length > 0;
-  const isCorrect = isQuiz
-    && uniqueIndexes.length === poll.correctOptionIndexes.length
-    && uniqueIndexes.every((index, position) => index === poll.correctOptionIndexes[position]);
+  const isCorrect = isQuiz && poll.correctOptionIndexes.includes(uniqueIndexes[0]);
 
   savePoll(poll, dataDirectory);
   if (isQuiz) {

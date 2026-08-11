@@ -4,6 +4,7 @@ import {
   InteractionResponseType,
   MessageComponentTypes,
 } from 'discord-interactions';
+import { DiscordRequest } from '../utils.js';
 
 import { isAuthorizedUser } from './coldcall.js';
 import {
@@ -223,9 +224,9 @@ export function handleOpenComponent(componentId, req) {
           components: [{
             type: MessageComponentTypes.STRING_SELECT,
             custom_id: `${POLL_VOTE_COMPONENT_PREFIX}${name}`,
-            placeholder: 'Select one or more answers',
+            placeholder: 'Select an answer',
             min_values: 1,
-            max_values: poll.options.length,
+            max_values: 1,
             options: poll.options.map((option, index) => ({
               label: option.text,
               value: String(index),
@@ -242,15 +243,32 @@ export function handleOpenComponent(componentId, req) {
 export function handleVoteComponent(componentId, req) {
   try {
     const name = componentId.slice(POLL_VOTE_COMPONENT_PREFIX.length);
-    recordPollVotes(name, req.body.data.values || [], getInvokingUser(req));
+    const applicationId = process.env.DISCORD_APPLICATION_ID;
+
+    if (!applicationId || !req.body.token || !req.body.message?.id) {
+      throw new Error('Unable to update the poll interaction');
+    }
+
+    const selectedIndexes = req.body.data.values || [];
+    const result = recordPollVotes(name, selectedIndexes, getInvokingUser(req));
+    const selectedOption = result.poll.options[Number.parseInt(selectedIndexes[0], 10)].text;
+    const outcome = result.isQuiz
+      ? (result.isCorrect ? '✅ Correct' : '❌ Incorrect')
+      : 'Response recorded';
+    const endpoint = `webhooks/${applicationId}/${req.body.token}/messages/${req.body.message.id}`;
     return {
-      type: InteractionResponseType.UPDATE_MESSAGE,
-      data: {
-        content: 'Your response was recorded.',
-        components: [],
+      response: {
+        type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE,
       },
+      afterResponse: () => DiscordRequest(endpoint, {
+        method: 'PATCH',
+        body: {
+          content: `You selected: ${selectedOption}\n${outcome}`,
+          components: [],
+        },
+      }),
     };
   } catch (error) {
-    return message(error.message, true);
+    return { response: message(error.message, true) };
   }
 }

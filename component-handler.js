@@ -28,14 +28,31 @@ const componentHandlers = {
   [POLL_VOTE_COMPONENT_PREFIX]: handlePollVoteComponent,
 };
 
-export function handleComponent(req, res) {
+export async function handleComponent(req, res) {
   const componentId = req.body.data.custom_id;
   const handlerKey = Object.keys(componentHandlers)
     .find((key) => componentId.startsWith(key));
   const componentHandler = componentHandlers[handlerKey];
 
   if (componentHandler) {
-    return res.send(componentHandler(componentId, req));
+    const result = componentHandler(componentId, req);
+
+    if (!result) {
+      console.error(`Component could not be handled: ${componentId}`);
+      return res.status(400).json({ error: 'Component could not be handled' });
+    }
+
+    res.send(result.response || result);
+
+    if (result.afterResponse) {
+      try {
+        await result.afterResponse();
+      } catch (error) {
+        console.error('Error updating component message:', error.message);
+      }
+    }
+
+    return;
   }
 
   console.error(`Unknown component: ${componentId}`);
