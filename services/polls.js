@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const servicesDirectory = path.dirname(fileURLToPath(import.meta.url));
 const defaultDataDirectory = path.join(servicesDirectory, '..', 'data');
 const POLL_NAME_PATTERN = /^[a-zA-Z0-9_-]{1,50}$/;
+const SCORES_FILENAME = 'poll-scores.json';
 
 export function validatePollName(name) {
   return typeof name === 'string' && POLL_NAME_PATTERN.test(name);
@@ -14,18 +15,23 @@ export function getPollPath(name, dataDirectory = defaultDataDirectory) {
   if (!validatePollName(name)) {
     throw new Error('Poll names may contain only letters, numbers, hyphens, and underscores');
   }
-
   return path.join(dataDirectory, `poll-${name}.json`);
+}
+
+export function getScoresPath(dataDirectory = defaultDataDirectory) {
+  return path.join(dataDirectory, SCORES_FILENAME);
 }
 
 export function loadPoll(name, dataDirectory = defaultDataDirectory) {
   const pollPath = getPollPath(name, dataDirectory);
-
   if (!fs.existsSync(pollPath)) {
     throw new Error(`Poll "${name}" does not exist`);
   }
 
-  return JSON.parse(fs.readFileSync(pollPath, 'utf8'));
+  const poll = JSON.parse(fs.readFileSync(pollPath, 'utf8'));
+  poll.voters ||= [];
+  poll.correctOptionIndexes ||= [];
+  return poll;
 }
 
 export function savePoll(poll, dataDirectory = defaultDataDirectory) {
@@ -34,7 +40,13 @@ export function savePoll(poll, dataDirectory = defaultDataDirectory) {
   return poll;
 }
 
-export function createPoll(name, prompt, answerLines, dataDirectory = defaultDataDirectory) {
+export function createPoll(
+  name,
+  prompt,
+  answerLines,
+  correctAnswerPrefix = '',
+  dataDirectory = defaultDataDirectory,
+) {
   if (!validatePollName(name)) {
     throw new Error('Invalid poll name');
   }
@@ -48,29 +60,38 @@ export function createPoll(name, prompt, answerLines, dataDirectory = defaultDat
   if (!normalizedPrompt) {
     throw new Error('A poll prompt is required');
   }
-
   if (answers.length < 2 || answers.length > 25) {
     throw new Error('A poll must have between 2 and 25 answers');
   }
-
   if (answers.some((answer) => answer.length > 100)) {
     throw new Error('Poll answers must be 100 characters or fewer');
+  }
+
+  const normalizedPrefix = correctAnswerPrefix?.trim().toLowerCase() || '';
+  const correctOptionIndexes = normalizedPrefix
+    ? answers
+      .map((answer, index) => (answer.toLowerCase().startsWith(normalizedPrefix) ? index : -1))
+      .filter((index) => index !== -1)
+    : [];
+
+  if (normalizedPrefix && correctOptionIndexes.length === 0) {
+    throw new Error('The correct answer must match the start of at least one option');
   }
 
   return savePoll({
     name,
     prompt: normalizedPrompt,
     options: answers.map((text) => ({ text, count: 0 })),
+    correctOptionIndexes,
+    voters: [],
   }, dataDirectory);
 }
 
 export function deletePoll(name, dataDirectory = defaultDataDirectory) {
   const pollPath = getPollPath(name, dataDirectory);
-
   if (!fs.existsSync(pollPath)) {
     throw new Error(`Poll "${name}" does not exist`);
   }
-
   fs.unlinkSync(pollPath);
 }
 
@@ -79,12 +100,69 @@ export function resetPoll(name, dataDirectory = defaultDataDirectory) {
   poll.options.forEach((option) => {
     option.count = 0;
   });
+  poll.voters = [];
   return savePoll(poll, dataDirectory);
 }
 
-export function recordPollVotes(name, selectedIndexes, dataDirectory = defaultDataDirectory) {
+export function hasVoted(name, userId, dataDirectory = defaultDataDirectory) {
+  return loadPoll(name, dataDirectory).voters.includes(userId);
+}
+
+export function loadScores(dataDirectory = defaultDataDirectory) {
+  const scoresPath = getScoresPath(dataDirectory);
+  if (!fs.existsSync(scoresPath)) {
+    return { users: [] };
+  }
+  const scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
+  return { users: Array.isArray(scores.users) ? scores.users : [] };
+}
+
+function saveScores(scores, dataDirectory = defaultDataDirectory) {
+  fs.mkdirSync(dataDirectory, { recursive: true });
+  fs.writeFileSync(getScoresPath(dataDirectory), JSON.stringify(scores, null, 2));
+}
+
+function incrementUserScore(voter, dataDirectory) {
+  const scores = loadScores(dataDirectory);
+  let user = scores.users.find((candidate) => candidate.userId === voter.userId);
+
+  if (!user) {
+    user = { userId: voter.userId, username: voter.username, score: 0 };
+    scores.users.push(user);
+  }
+
+  user.username = voter.username;
+  user.score += 1;
+  saveScores(scores, dataDirectory);
+}
+
+export function getUserScore(userId, dataDirectory = defaultDataDirectory) {
+  return loadScores(dataDirectory).users.find((user) => user.userId === userId)?.score || 0;
+}
+
+export function getTopScores(limit = 5, dataDirectory = defaultDataDirectory) {
+  return loadScores(dataDirectory).users
+    .toSorted((left, right) => right.score - left.score || left.username.localeCompare(right.username))
+    .slice(0, limit);
+}
+
+export function recordPollVotes(
+  name,
+  selectedIndexes,
+  voter,
+  dataDirectory = defaultDataDirectory,
+) {
   const poll = loadPoll(name, dataDirectory);
-  const uniqueIndexes = new Set(selectedIndexes.map((value) => Number.parseInt(value, 10)));
+  if (!voter?.userId || !voter?.username) {
+    throw new Error('Unable to identify the poll respondent');
+  }
+  if (poll.voters.includes(voter.userId)) {
+    throw new Error('You have already answered this poll');
+  }
+
+  const uniqueIndexes = [...new Set(
+    selectedIndexes.map((value) => Number.parseInt(value, 10)),
+  )].toSorted((left, right) => left - right);
 
   uniqueIndexes.forEach((index) => {
     if (!Number.isInteger(index) || !poll.options[index]) {
@@ -93,6 +171,16 @@ export function recordPollVotes(name, selectedIndexes, dataDirectory = defaultDa
     poll.options[index].count += 1;
   });
 
+  poll.voters.push(voter.userId);
+  const isQuiz = poll.correctOptionIndexes.length > 0;
+  const isCorrect = isQuiz
+    && uniqueIndexes.length === poll.correctOptionIndexes.length
+    && uniqueIndexes.every((index, position) => index === poll.correctOptionIndexes[position]);
+
   savePoll(poll, dataDirectory);
-  return poll;
+  if (isCorrect) {
+    incrementUserScore(voter, dataDirectory);
+  }
+
+  return { poll, isQuiz, isCorrect };
 }

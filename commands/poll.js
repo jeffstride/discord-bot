@@ -9,6 +9,9 @@ import { isAuthorizedUser } from './coldcall.js';
 import {
   createPoll,
   deletePoll,
+  getTopScores,
+  getUserScore,
+  hasVoted,
   loadPoll,
   recordPollVotes,
   resetPoll,
@@ -20,7 +23,8 @@ export const POLL_OPEN_COMPONENT_PREFIX = 'poll_open:';
 export const POLL_VOTE_COMPONENT_PREFIX = 'poll_vote:';
 const PROMPT_INPUT_ID = 'poll_prompt';
 const ANSWERS_INPUT_ID = 'poll_answers';
-const POLL_ACTIONS = ['create', 'send', 'delete', 'reset', 'results'];
+const CORRECT_ANSWER_INPUT_ID = 'poll_correct_answer';
+const POLL_ACTIONS = ['create', 'send', 'delete', 'reset', 'results', 'score'];
 
 export const command = {
   name: 'poll',
@@ -86,6 +90,17 @@ function createModal(name) {
             max_length: 4000,
           }],
         },
+        {
+          type: MessageComponentTypes.ACTION_ROW,
+          components: [{
+            type: MessageComponentTypes.INPUT_TEXT,
+            custom_id: CORRECT_ANSWER_INPUT_ID,
+            style: 1,
+            label: 'Correct answer prefix (optional)',
+            required: false,
+            max_length: 100,
+          }],
+        },
       ],
     },
   };
@@ -117,11 +132,31 @@ function formatResults(poll) {
   ].join('\n');
 }
 
-export function handleCommand(req) {
-  if (!isAuthorizedUser(req)) {
-    return message('You are not authorized to use this command.', true);
+function getInvokingUser(req) {
+  const user = req.body.member?.user || req.body.user;
+  return {
+    userId: user?.id,
+    username: req.body.member?.nick || user?.global_name || user?.username,
+  };
+}
+
+function formatScoreResponse(req) {
+  const invokingUser = getInvokingUser(req);
+
+  if (isAuthorizedUser(req)) {
+    const topScores = getTopScores();
+    return topScores.length === 0
+      ? 'No quiz scores have been recorded.'
+      : [
+        'Top quiz scores:',
+        ...topScores.map((user, index) => `${index + 1}. ${user.username}: ${user.score}`),
+      ].join('\n');
   }
 
+  return `${invokingUser.username || 'Your'} score: ${getUserScore(invokingUser.userId)}`;
+}
+
+export function handleCommand(req) {
   const name = getOption(req, 'name');
   const action = getOption(req, 'action');
 
@@ -131,6 +166,14 @@ export function handleCommand(req) {
 
   if (!POLL_ACTIONS.includes(action)) {
     return message('Invalid poll action.', true);
+  }
+
+  if (action === 'score') {
+    return message(formatScoreResponse(req), true);
+  }
+
+  if (!isAuthorizedUser(req)) {
+    return message('You are not authorized to use this command.', true);
   }
 
   if (action === 'create') {
@@ -172,6 +215,7 @@ export function handleModalSubmit(modalId, req) {
       name,
       modalInputValue(req, PROMPT_INPUT_ID),
       modalInputValue(req, ANSWERS_INPUT_ID),
+      modalInputValue(req, CORRECT_ANSWER_INPUT_ID),
     );
     return message(`Poll ${name} was created.`, true);
   } catch (error) {
@@ -179,10 +223,16 @@ export function handleModalSubmit(modalId, req) {
   }
 }
 
-export function handleOpenComponent(componentId) {
+export function handleOpenComponent(componentId, req) {
   try {
     const name = componentId.slice(POLL_OPEN_COMPONENT_PREFIX.length);
     const poll = loadPoll(name);
+    const { userId } = getInvokingUser(req);
+
+    if (hasVoted(name, userId)) {
+      return message('You have already answered this poll.', true);
+    }
+
     return {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {
@@ -212,11 +262,11 @@ export function handleOpenComponent(componentId) {
 export function handleVoteComponent(componentId, req) {
   try {
     const name = componentId.slice(POLL_VOTE_COMPONENT_PREFIX.length);
-    recordPollVotes(name, req.body.data.values || []);
+    recordPollVotes(name, req.body.data.values || [], getInvokingUser(req));
     return {
       type: InteractionResponseType.UPDATE_MESSAGE,
       data: {
-        content: 'Your anonymous response was recorded.',
+        content: 'Your response was recorded.',
         components: [],
       },
     };

@@ -108,9 +108,10 @@ In your Discord test server, type `/hello`. The bot should reply "Hello from you
 ## Polls
 
 Use `/poll name:<name> action:create` to define a poll, then use the `send`,
-`results`, `reset`, or `delete` actions to manage it. Poll administration is
-restricted to `COLD_CALL_USER_ID`; ballots are available to everyone and only
-aggregate counts are stored in `data/poll-<name>.json`.
+`results`, `reset`, `delete`, or `score` actions to manage it. Poll administration
+is restricted to `COLD_CALL_USER_ID`; ballots are available to everyone, and
+each poll records which user IDs have submitted. Quiz scores are stored
+separately in `data/poll-scores.json`.
 
 ## Troubleshooting
 - **Interactions Endpoint URL won't save** → the app isn't running, or the port isn't public. Check both.
