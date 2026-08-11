@@ -3,13 +3,18 @@ import {
   handleComponent as handleColdcallComponent,
 } from './commands/coldcall.js';
 import {
-  CREDIT_COMPONENT_ID,
+  CREDIT_COMPONENT_PREFIX,
   handleComponent as handleCreditComponent,
 } from './commands/credit.js';
+import {
+  handleComponent as handleSetSectionComponent,
+  SET_SECTION_COMPONENT_ID,
+} from './commands/setsection.js';
 
 const componentHandlers = {
   [COLD_CALL_COMPONENT_PREFIX]: handleColdcallComponent,
-  [CREDIT_COMPONENT_ID]: (_componentId, req) => handleCreditComponent(req),
+  [CREDIT_COMPONENT_PREFIX]: handleCreditComponent,
+  [SET_SECTION_COMPONENT_ID]: (_componentId, req) => handleSetSectionComponent(req),
 };
 
 export function handleComponent(req, res) {

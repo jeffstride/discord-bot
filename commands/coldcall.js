@@ -7,6 +7,7 @@ import {
   InteractionResponseType,
   MessageComponentTypes,
 } from 'discord-interactions';
+import { getSectionPath, resolveActiveSection } from '../services/sections.js';
 
 const commandsDirectory = path.dirname(fileURLToPath(import.meta.url));
 const defaultStudentsPath = path.join(commandsDirectory, '..', 'data', 'students.csv');
@@ -110,7 +111,11 @@ export function selectRandomStudent(names, random = Math.random) {
   return names[Math.floor(random() * names.length)];
 }
 
-export function createColdcallResponse(names, random = Math.random) {
+export function createColdcallResponse(
+  names,
+  random = Math.random,
+  sectionFilename = 'students.csv',
+) {
   const selectableStudents = names
     .map((student, rowIndex) => (
       typeof student === 'string' ? { name: student, rowIndex } : student
@@ -135,7 +140,7 @@ export function createColdcallResponse(names, random = Math.random) {
           components: [
             {
               type: MessageComponentTypes.STRING_SELECT,
-              custom_id: `${COLD_CALL_COMPONENT_PREFIX}${student.rowIndex}`,
+              custom_id: `${COLD_CALL_COMPONENT_PREFIX}${encodeURIComponent(sectionFilename)}:${student.rowIndex}`,
               placeholder: 'Record the result',
               min_values: 1,
               max_values: 1,
@@ -218,7 +223,27 @@ export function handleCommand(req) {
   }
 
   try {
-    return createColdcallResponse(loadEligibleStudents());
+    const section = resolveActiveSection(req);
+
+    if (section.status === 'required') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: '/setsection required before you can coldcall' },
+      };
+    }
+
+    if (section.status === 'missing') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: 'No CSV files were found in the data directory.' },
+      };
+    }
+
+    return createColdcallResponse(
+      loadEligibleStudents(section.path),
+      Math.random,
+      section.filename,
+    );
   } catch (error) {
     console.error('Failed to select a student:', error.message);
     return {
@@ -240,9 +265,16 @@ export function handleComponent(componentId, req) {
   }
 
   try {
-    const rowIndex = Number.parseInt(componentId.slice(COLD_CALL_COMPONENT_PREFIX.length), 10);
+    const componentValue = componentId.slice(COLD_CALL_COMPONENT_PREFIX.length);
+    const separatorIndex = componentValue.lastIndexOf(':');
+    const sectionFilename = decodeURIComponent(componentValue.slice(0, separatorIndex));
+    const rowIndex = Number.parseInt(componentValue.slice(separatorIndex + 1), 10);
     const result = req.body.data.values?.[0];
-    const studentName = incrementStudentResult(rowIndex, result);
+    const studentName = incrementStudentResult(
+      rowIndex,
+      result,
+      getSectionPath(sectionFilename),
+    );
 
     return {
       type: InteractionResponseType.UPDATE_MESSAGE,

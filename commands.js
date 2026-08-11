@@ -3,6 +3,7 @@ import { command as rollCommand } from './commands/roll.js';
 import { command as remindCommand } from './commands/remind.js';
 import { command as coldcallCommand } from './commands/coldcall.js';
 import { command as creditCommand } from './commands/credit.js';
+import { command as setSectionCommand } from './commands/setsection.js';
 
 export const ALL_COMMANDS = [
   helloCommand,
@@ -10,4 +11,5 @@ export const ALL_COMMANDS = [
   remindCommand,
   coldcallCommand,
   creditCommand,
+  setSectionCommand,
 ];

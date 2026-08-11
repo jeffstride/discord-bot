@@ -9,8 +9,9 @@ import {
   isAuthorizedUser,
   loadStudents,
 } from './coldcall.js';
+import { getSectionPath, resolveActiveSection } from '../services/sections.js';
 
-export const CREDIT_COMPONENT_ID = 'credit_student';
+export const CREDIT_COMPONENT_PREFIX = 'credit_student:';
 
 export const command = {
   name: 'credit',
@@ -28,7 +29,7 @@ function unauthorizedResponse() {
   };
 }
 
-export function createCreditResponse(students) {
+export function createCreditResponse(students, sectionFilename = 'students.csv') {
   if (students.length === 0) {
     return {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -56,7 +57,7 @@ export function createCreditResponse(students) {
           components: [
             {
               type: MessageComponentTypes.STRING_SELECT,
-              custom_id: CREDIT_COMPONENT_ID,
+              custom_id: `${CREDIT_COMPONENT_PREFIX}${encodeURIComponent(sectionFilename)}`,
               placeholder: 'Select a student',
               min_values: 1,
               max_values: 1,
@@ -78,7 +79,23 @@ export function handleCommand(req) {
   }
 
   try {
-    return createCreditResponse(loadStudents());
+    const section = resolveActiveSection(req);
+
+    if (section.status === 'required') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: '/setsection required before you can give credit' },
+      };
+    }
+
+    if (section.status === 'missing') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: 'No CSV files were found in the data directory.' },
+      };
+    }
+
+    return createCreditResponse(loadStudents(section.path), section.filename);
   } catch (error) {
     console.error('Failed to load students for credit:', error.message);
     return {
@@ -92,14 +109,17 @@ export function recordCredit(rowIndex, studentsPath) {
   return incrementStudentResult(rowIndex, 'answered', studentsPath);
 }
 
-export function handleComponent(req) {
+export function handleComponent(componentId, req) {
   if (!isAuthorizedUser(req)) {
     return unauthorizedResponse();
   }
 
   try {
+    const sectionFilename = decodeURIComponent(
+      componentId.slice(CREDIT_COMPONENT_PREFIX.length),
+    );
     const rowIndex = Number.parseInt(req.body.data.values?.[0], 10);
-    const studentName = recordCredit(rowIndex);
+    const studentName = recordCredit(rowIndex, getSectionPath(sectionFilename));
 
     return {
       type: InteractionResponseType.UPDATE_MESSAGE,
