@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node --watch app.js",
-    "register": "node register-commands.js"
+    "register": "node register-commands.js",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
     "discord-interactions": "^4.4.0",

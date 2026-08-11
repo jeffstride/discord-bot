@@ -4,6 +4,7 @@ import { command as remind, handleCommand as handleRemind } from './commands/rem
 import { command as coldcall, handleCommand as handleColdcall } from './commands/coldcall.js';
 import { command as credit, handleCommand as handleCredit } from './commands/credit.js';
 import { command as setSection, handleCommand as handleSetSection } from './commands/setsection.js';
+import { command as poll, handleCommand as handlePoll } from './commands/poll.js';
 
 const commandHandlers = {
   [hello.name]: handleHello,
@@ -12,6 +13,7 @@ const commandHandlers = {
   [coldcall.name]: handleColdcall,
   [credit.name]: handleCredit,
   [setSection.name]: handleSetSection,
+  [poll.name]: handlePoll,
 };
 
 export function handleCommand(req, res) {

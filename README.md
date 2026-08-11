@@ -32,6 +32,7 @@ what you'll eventually use for the class project.
 | `commands.js` | Collects the command definitions for registration |
 | `services/reminders.js` | Persists, schedules, and delivers reminders |
 | `services/sections.js` | Discovers CSV sections and remembers the active section per server |
+| `services/polls.js` | Persists poll definitions and anonymous aggregate counts |
 | `data/students.csv` | Supplies names for the `/coldcall` command |
 | `register-commands.js` | One-time script that tells Discord about the commands |
 | `utils.js` | Small helper for calling Discord's API with your bot token |
@@ -72,7 +73,7 @@ Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
 ```bash
 npm run register
 ```
-You should see `Registered 6 command(s): hello, roll, remind, coldcall, credit, setsection`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
+You should see `Registered 7 command(s): hello, roll, remind, coldcall, credit, setsection, poll`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
 
 ### 5. Run the bot
 ```bash
@@ -103,6 +104,13 @@ In your Discord test server, type `/hello`. The bot should reply "Hello from you
 2. Import its definition in `commands.js` and its handler in `command-handler.js`.
 3. Run `npm run register` to update Discord.
 4. Restart the server (or just let `npm run dev` auto-restart it on save).
+
+## Polls
+
+Use `/poll name:<name> action:create` to define a poll, then use the `send`,
+`results`, `reset`, or `delete` actions to manage it. Poll administration is
+restricted to `COLD_CALL_USER_ID`; ballots are available to everyone and only
+aggregate counts are stored in `data/poll-<name>.json`.
 
 ## Troubleshooting
 - **Interactions Endpoint URL won't save** → the app isn't running, or the port isn't public. Check both.

@@ -10,11 +10,19 @@ import {
   handleComponent as handleSetSectionComponent,
   SET_SECTION_COMPONENT_ID,
 } from './commands/setsection.js';
+import {
+  handleOpenComponent as handlePollOpenComponent,
+  handleVoteComponent as handlePollVoteComponent,
+  POLL_OPEN_COMPONENT_PREFIX,
+  POLL_VOTE_COMPONENT_PREFIX,
+} from './commands/poll.js';
 
 const componentHandlers = {
   [COLD_CALL_COMPONENT_PREFIX]: handleColdcallComponent,
   [CREDIT_COMPONENT_PREFIX]: handleCreditComponent,
   [SET_SECTION_COMPONENT_ID]: (_componentId, req) => handleSetSectionComponent(req),
+  [POLL_OPEN_COMPONENT_PREFIX]: handlePollOpenComponent,
+  [POLL_VOTE_COMPONENT_PREFIX]: handlePollVoteComponent,
 };
 
 export function handleComponent(req, res) {
