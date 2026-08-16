@@ -1,0 +1,618 @@
+[
+  {
+    "id": "dad-001",
+    "text": "I loved building sandcastles with my grandpa, until my mom took the urn away."
+  },
+  {
+    "id": "dad-002",
+    "text": "I’ll never forget my grandpa's last words before he kicked the bucket: “hey, how far do you think I can kick this bucket?”"
+  },
+  {
+    "id": "dad-003",
+    "text": "Just before my grandpa passed, he said pull my finger."
+  },
+  {
+    "id": "dad-004",
+    "text": "My grandfather died peacefully in his sleep. Not like the screaming passengers in his car."
+  },
+  {
+    "id": "dad-005",
+    "text": "Algebra for the Romans must have been super easy. X was always ten."
+  },
+  {
+    "id": "dad-006",
+    "text": "Someone asked me why I liked Worcestershire sauce. I replied, it’s hard to say."
+  },
+  {
+    "id": "dad-007",
+    "text": "My wife kicked me out of the house. On my way out she yelled, “I hope you spend the rest of your life in pain and misery.” I replied, “Make up your mind. First you want me to leave. Now you want me to stay?”"
+  },
+  {
+    "id": "dad-008",
+    "text": "I caught my 7 year-old son chewing on electrical wiring. I had to ground him. He’s conducting himself better now."
+  },
+  {
+    "id": "dad-009",
+    "text": "A policeman came to my door and said, “I’m looking for a suspicious person with one eye.” I replied, “Your search might go more easily if you use both eyes.”"
+  },
+  {
+    "id": "dad-010",
+    "text": "A fisherman and a mermaid just got married. They met online."
+  },
+  {
+    "id": "dad-011",
+    "text": "I’m not wearing glasses anymore. I’ve seen enough."
+  },
+  {
+    "id": "dad-012",
+    "text": "A history degree is useless. There’s no future in it."
+  },
+  {
+    "id": "dad-013",
+    "text": "What did the apple say to the kangaroo? Nothing. Apples don’t talk."
+  },
+  {
+    "id": "dad-014",
+    "text": "My son was accused of theft and got fired from his road worker job. I just couldn't believe it. but, when I went into his room, all the signs were there."
+  },
+  {
+    "id": "dad-015",
+    "text": "Cross-eyed teacher cannot control pupils"
+  },
+  {
+    "id": "dad-016",
+    "text": "Man who live in glass house should shower in basement."
+  },
+  {
+    "id": "dad-017",
+    "text": "I told my wife to embrace her mistakes. She hugged me."
+  },
+  {
+    "id": "dad-018",
+    "text": "Why didn’t the worms go on Noah’s Ark in an apple? Because they were supposed to go in pairs."
+  },
+  {
+    "id": "dad-019",
+    "text": "Did you hear about the two thieves that stole the calendar? They each got 6 months."
+  },
+  {
+    "id": "dad-021",
+    "text": "So long boiling water. You will be missed."
+  },
+  {
+    "id": "dad-022",
+    "text": "Do you know why the Swedish navy ships have bar codes on them? So they can scan the navy in."
+  },
+  {
+    "id": "dad-023",
+    "text": "I was wondering why the frisbee kept getting bigger and bigger. And then it hit me."
+  },
+  {
+    "id": "dad-024",
+    "text": "How do you catch a unique bird? Unique up on it."
+  },
+  {
+    "id": "dad-025",
+    "text": "I was hired to be a bullet. I was immediately fired."
+  },
+  {
+    "id": "dad-026",
+    "text": "When someone tells me to stop acting like a flamingo, that’s when I put my foot down."
+  },
+  {
+    "id": "dad-028",
+    "text": "Person 1: May I interrupt to say a quick word?\nPerson 2: Sure, go ahead.\nPerson 1: Plethora\nPerson 2: Thank you. That means a lot."
+  },
+  {
+    "id": "dad-029",
+    "text": "To the person that stole my Microsoft Office license. I will find you. You have my Word."
+  },
+  {
+    "id": "dad-030",
+    "text": "My friend said, “I don’t understand cloning.” I responded with, “That makes two of us.”"
+  },
+  {
+    "id": "dad-031",
+    "text": "I was going to tell you a time traveling joke, but you didn’t like it."
+  },
+  {
+    "id": "dad-032",
+    "text": "My roommate thinks I’m schizophrenic, but the jokes on him. I don’t have a roommate."
+  },
+  {
+    "id": "dad-033",
+    "text": "Why does the Little Mermaid wear Seashells? Because B-shells are too small."
+  },
+  {
+    "id": "dad-035",
+    "text": "What kind of bees make milk instead of honey? Boo Bees."
+  },
+  {
+    "id": "dad-036",
+    "text": "I used to be addicted to the hokey-pokey.\nBut I turned myself around…\nAnd that’s what it’s all about."
+  },
+  {
+    "id": "dad-037",
+    "text": "I’m addicted to airport jokes. But, don’t worry. My doctor says it’s not terminal.\nThe problem is, all my jokes are plane."
+  },
+  {
+    "id": "dad-038",
+    "text": "I’m the fabric version of King Midas. Everything I touch becomes felt."
+  },
+  {
+    "id": "dad-039",
+    "text": "What do you call a lazy baby kangaroo? A pouch potato."
+  },
+  {
+    "id": "dad-040",
+    "text": "The calendar had better watch its back. Its days are numbered."
+  },
+  {
+    "id": "dad-041",
+    "text": "Lately, people have been making apocalypse jokes like there’s no tomorrow."
+  },
+  {
+    "id": "dad-042",
+    "text": "I once swallowed a book of synonyms. It gave me thesaurus throat I’ve ever had."
+  },
+  {
+    "id": "dad-043",
+    "text": "Q: What do Winne the Pooh, Alexander the Great, and Ivan the Terrible have in common?\nA: They all have the same middle name."
+  },
+  {
+    "id": "dad-045",
+    "text": "Why did the elephants get kicked off the surfing team? They just couldn’t keep their trunks up."
+  },
+  {
+    "id": "dad-046",
+    "text": "Why did the giraffe break up with her boyfriend? He was a cheetah."
+  },
+  {
+    "id": "dad-047",
+    "text": "What do you call a cow with one leg? Stake"
+  },
+  {
+    "id": "dad-048",
+    "text": "What do you get when you cross a Dad joke with a rhetorical question?"
+  },
+  {
+    "id": "dad-049",
+    "text": "I heard on the news that someone had robbed the Tokyo Origami Museum in Japan.\nThe anchor said that the story was still unfolding."
+  },
+  {
+    "id": "dad-050",
+    "text": "Of all the inventions in human history, the dry erase board has to be the most remarkable."
+  },
+  {
+    "id": "dad-051",
+    "text": "Those who fail History are doomed to repeat it."
+  },
+  {
+    "id": "dad-052",
+    "text": "I used to be addicted to not showering, but I eventually got clean."
+  },
+  {
+    "id": "dad-053",
+    "text": "I heard Humpty Dumpty is having an awful winter, which is a shame, because he had a great fall!"
+  },
+  {
+    "id": "dad-054",
+    "text": "I told my mom that she had drawn her eyebrows too high. She looked surprised!"
+  },
+  {
+    "id": "dad-055",
+    "text": "I used to have a job digging tunnels underground. It was really boring."
+  },
+  {
+    "id": "dad-056",
+    "text": "What did the notebook say when it graduated? College ruled."
+  },
+  {
+    "id": "dad-057",
+    "text": "I tried to date a tennis player once, but love meant nothing to her."
+  },
+  {
+    "id": "dad-058",
+    "text": "As I handed my dad his fiftieth birthday card, he looked at me with tears in his eyes and said, “You know, one would have been enough.”"
+  },
+  {
+    "id": "dad-059",
+    "text": "To the person on crutches who stole my camouflage jacket: you can hide, but you can’t run."
+  },
+  {
+    "id": "dad-060",
+    "text": "Parallel lines have so much in common. It’s a shame they’ll never meet."
+  },
+  {
+    "id": "dad-061",
+    "text": "Why did the picture go to jail? It was framed!"
+  },
+  {
+    "id": "dad-062",
+    "text": "I used to work at a calendar factory, but I got fired after I took a couple of days off."
+  },
+  {
+    "id": "dad-063",
+    "text": "Why did the old lady fall down the well? She didn’t see that well."
+  },
+  {
+    "id": "dad-064",
+    "text": "My old job involved crushing cans. I had to quit because it was soda-pressing."
+  },
+  {
+    "id": "dad-065",
+    "text": "I got a job taking care of horses. It provides a stable income."
+  },
+  {
+    "id": "dad-066",
+    "text": "A company is introducing glass coffins. Will they be successful? Remains to be seen."
+  },
+  {
+    "id": "dad-067",
+    "text": "My ex-girlfriend was obsessed with trying to find the largest known prime number. I wonder what she’s up to now."
+  },
+  {
+    "id": "dad-068",
+    "text": "I used to be addicted to Thanksgiving leftovers. I had to quit cold turkey."
+  },
+  {
+    "id": "dad-069",
+    "text": "Did you know that every planet in the solar system was named after a god. Except Earth… which was named after all that stuff on the ground."
+  },
+  {
+    "id": "dad-070",
+    "text": "Flight Attendant to Passenger: Do you want dinner?\nPassenger: What are my options?\nFlight Attendant: Yes or no."
+  },
+  {
+    "id": "dad-071",
+    "text": "Thanksgiving Shopper looking at a bunch of small, frozen turkeys. She says to the Stock Boy: Do these turkeys get any bigger?\nStock Boy: No, ma’am. They’re dead."
+  },
+  {
+    "id": "dad-072",
+    "text": "Policeman to Speeder when giving a ticket: I’ve been waiting for you all day.\nDriver: Well, I got here as fast as I could."
+  },
+  {
+    "id": "dad-073",
+    "text": "My dog ate my computer science project.  It took him a couple bytes"
+  },
+  {
+    "id": "dad-074",
+    "text": "I used to think orthotics could not improve my posture. I stand corrected."
+  },
+  {
+    "id": "dad-075",
+    "text": "Why don’t they let football players wear glasses? It’s a contact sport."
+  },
+  {
+    "id": "dad-076",
+    "text": "I don’t believe in atoms. They make up everything!"
+  },
+  {
+    "id": "dad-077",
+    "text": "What did the hat say to the scarf? You hang around. I’ll go on ahead."
+  },
+  {
+    "id": "dad-078",
+    "text": "I read about a cartoonist who went missing. Details are sketchy at this time."
+  },
+  {
+    "id": "dad-079",
+    "text": "Did you know that bees are allergic to pollen? They develop hives."
+  },
+  {
+    "id": "dad-080",
+    "text": "My brother just called to tell me that he got sick after drinking a potion of invisibility. He’s been in the ER for 8 hours and is still waiting to be seen."
+  },
+  {
+    "id": "dad-081",
+    "text": "6 of 7 Dwarves are not Happy."
+  },
+  {
+    "id": "dad-082",
+    "text": "I hate it when people expect emotional confirmation. Am I right?!"
+  },
+  {
+    "id": "dad-083",
+    "text": "Did you hear that Hawaii outlawed loud laughing? They only allow a low ha."
+  },
+  {
+    "id": "dad-084",
+    "text": "It took me 5 minutes to walk to the bar, but 20 minutes to walk back. The difference is staggering."
+  },
+  {
+    "id": "dad-085",
+    "text": "Last night, a man got hit by a violin, a clarinet, and then a french horn. Police say it was an orchestrated attack."
+  },
+  {
+    "id": "dad-086",
+    "text": "A friend of mine was abducted by a group of mimes. They did unspeakable things to him."
+  },
+  {
+    "id": "dad-087",
+    "text": "Why do programmers prefer to code in the dark? Because the light attracts bugs."
+  },
+  {
+    "id": "dad-088",
+    "text": "Did I tell you that I wrote a book on reverse psychology? Please don’t buy it."
+  },
+  {
+    "id": "dad-089",
+    "text": "I broke up with my mathematician girlfriend. She was obsessed with an x."
+  },
+  {
+    "id": "dad-090",
+    "text": "What do a swimmer and an over-worked new programmer have in common? They both have to sink or swim."
+  },
+  {
+    "id": "dad-091",
+    "text": "Did you know that you can go sky diving without a parachute? You just can’t go twice."
+  },
+  {
+    "id": "dad-092",
+    "text": "My grandfather had the heart of a lion and a lifetime ban from the zoo."
+  },
+  {
+    "id": "dad-093",
+    "text": "How much does Santa pay to park his sleigh? Nothing. It’s on the house."
+  },
+  {
+    "id": "dad-094",
+    "text": "How do celebrities stay cool?  They have many fans."
+  },
+  {
+    "id": "dad-095",
+    "text": "When does a joke become a Dad joke? When it becomes apparent."
+  },
+  {
+    "id": "dad-096",
+    "text": "Why was the guillotine a great invention? Because it was ahead of its time."
+  },
+  {
+    "id": "dad-097",
+    "text": "2 windmills are having a conversation. One of them asks: “What kind of music do you listen to?” The other responds with: “Well, I’m a huge metal fan.”"
+  },
+  {
+    "id": "dad-098",
+    "text": "Last night I dreamt I weighed less than 1/1000 of a gram. I was like 0mg."
+  },
+  {
+    "id": "dad-099",
+    "text": "What are two things you can never eat for breakfast? Lunch and Dinner."
+  },
+  {
+    "id": "dad-100",
+    "text": "What do sprinters eat before a race? nothing, they fast!"
+  },
+  {
+    "id": "dad-101",
+    "text": "What kind of beverage is bitter and sweet? Reali-tea"
+  },
+  {
+    "id": "dad-102",
+    "text": "What happens when you shake milk? It becomes a milkshake."
+  },
+  {
+    "id": "dad-103",
+    "text": "What do you call an alligator in a vest? An investigator."
+  },
+  {
+    "id": "dad-104",
+    "text": "Did you hear the rumor about butter? Ok then well, I'm not gonna spread it."
+  },
+  {
+    "id": "dad-105",
+    "text": "What do Santa's elves listen to as they work? Wrap music."
+  },
+  {
+    "id": "dad-106",
+    "text": "What do you call a cow with no legs? Ground beef."
+  },
+  {
+    "id": "dad-107",
+    "text": "What did the doctor say to the skeleton? You’re too late."
+  },
+  {
+    "id": "dad-108",
+    "text": "Why do eggs never tell jokes? They would crack each other up!"
+  },
+  {
+    "id": "dad-109",
+    "text": "When I was little my mom told me I could be anyone I wanted. Turns out identity theft is illegal."
+  },
+  {
+    "id": "dad-110",
+    "text": "Did you hear about the cheese that saved the world? It was legend dairy."
+  },
+  {
+    "id": "dad-111",
+    "text": "Why did the math homework look sad?\nBecause it had too many problems."
+  },
+  {
+    "id": "dad-112",
+    "text": "Did you hear about the mathematician who had a problem with constipation?\nHe worked it out with a pencil."
+  },
+  {
+    "id": "dad-113",
+    "text": "What rock group has four men that don’t sing? Mount Rushmore!"
+  },
+  {
+    "id": "dad-115",
+    "text": "What concert costs just 45 cents? 50 Cent featuring Nickelback!"
+  },
+  {
+    "id": "dad-116",
+    "text": "Why couldn't the bicycle stand up by itself? It was two-tired."
+  },
+  {
+    "id": "dad-117",
+    "text": "I want to go on a diet, but I really feel like I have way too much on my plate."
+  },
+  {
+    "id": "dad-118",
+    "text": "What do you call a fake pasta? An Impasta!"
+  },
+  {
+    "id": "dad-119",
+    "text": "What did one Japanese person say to the other Japanese person?\nI don't know, I don't speak Japanese."
+  },
+  {
+    "id": "dad-120",
+    "text": "Why don’t crabs give to charity? Because they’re shellfish."
+  },
+  {
+    "id": "dad-121",
+    "text": "Why did the cyborg have to rest after his long road trip? Because he had a hard drive."
+  },
+  {
+    "id": "dad-122",
+    "text": "What is green and fuzzy and if it fell out of a tree it would kill you?\nA pool table."
+  },
+  {
+    "id": "dad-123",
+    "text": "What is a snake’s favorite subject? Computer ssssscience!"
+  },
+  {
+    "id": "dad-124",
+    "text": "What were the balloon’s last words to his dad? Watch me pop."
+  },
+  {
+    "id": "dad-126",
+    "text": "Where do dad's keep there jokes? In a Dad-a-base."
+  },
+  {
+    "id": "dad-127",
+    "text": "Past, Present, and Future walked into a bar.\nIt was tense."
+  },
+  {
+    "id": "dad-129",
+    "text": "What do you call a fish with no eyes? fshhhhhhhhhh"
+  },
+  {
+    "id": "dad-130",
+    "text": "Why was 4 afraid to ask out 5? Because she was 2 squared!"
+  },
+  {
+    "id": "dad-131",
+    "text": "What does a vampire teacher eat? Stew-dent."
+  },
+  {
+    "id": "dad-132",
+    "text": "Man run in front of car, Man get tired. Man run in back of car, Man get exhausted."
+  },
+  {
+    "id": "dad-136",
+    "text": "Culinary school is easy. The final exam was a piece of cake!"
+  },
+  {
+    "id": "dad-137",
+    "text": "How many ears does Captain Kirk have? 3... left ear, right ear, and the final frontier."
+  },
+  {
+    "id": "dad-138",
+    "text": "Why does Waldo wear striped shirts. He doesn’t want to be spotted."
+  },
+  {
+    "id": "dad-139",
+    "text": "What animal can jump higher than a house. All of them. Houses can’t jump."
+  },
+  {
+    "id": "dad-140",
+    "text": "I’ll never date an apostrophe again. The last one was too possessive."
+  },
+  {
+    "id": "dad-141",
+    "text": "Which animal has even more lives than a cat?  A frog. It croaks every night."
+  },
+  {
+    "id": "dad-142",
+    "text": "Dad, what do you want for your birthday this year?\nWell, just for the record, I need a new turntable."
+  },
+  {
+    "id": "dad-143",
+    "text": "What do you call a chicken that’s afraid of the dark? A chicken."
+  },
+  {
+    "id": "dad-144",
+    "text": "A man walks into a library and asks the librarian for books about paranoia. She says, “they’re right behind you”"
+  },
+  {
+    "id": "dad-145",
+    "text": "I read the sign, “duck, eggs” and thought, ‘well, that comma is unnecessary’. And then it hit me."
+  },
+  {
+    "id": "dad-146",
+    "text": "To the person who stole my depression medication, I hope you’re happy."
+  },
+  {
+    "id": "dad-147",
+    "text": "My girlfriend broke up with me so I stole her wheelchair. Guess who came crawling back."
+  },
+  {
+    "id": "dad-148",
+    "text": "What did Yoda say to himself after reaching 4K resolution? (In Yoda voice: HDMI)"
+  },
+  {
+    "id": "dad-149",
+    "text": "Gucci has a new line of clothes for babies. It’s called Gucci Goo."
+  },
+  {
+    "id": "dad-150",
+    "text": "What do you call a funny bone after it’s been boiled? A laughing stock."
+  },
+  {
+    "id": "dad-151",
+    "text": "Poop jokes aren’t my favorite. But they’re a solid number two."
+  },
+  {
+    "id": "dad-152",
+    "text": "How many teenagers does it take to screw in a light bulb? One. The teenager holds the light bulb and the world revolves around him."
+  },
+  {
+    "id": "dad-153",
+    "text": "Did you know that humans eat more bananas than monkeys? Don’t believe me? When was the last time you saw a human eat a monkey?"
+  },
+  {
+    "id": "dad-154",
+    "text": "What’s the scariest plant in the forest?  Bam-BOO!"
+  },
+  {
+    "id": "dad-155",
+    "text": "Did you hear they’re making a remake of the Wizard of Oz, but from the dog’s perspective?  It’s going to be called Toto Recall."
+  },
+  {
+    "id": "dad-156",
+    "text": "I’ve got to be at a funeral tomorrow at 9:00 am.  I hate that!  I am not a mourning person."
+  },
+  {
+    "id": "dad-157",
+    "text": "Why did the chicken go to the gym?  To work on its pecs."
+  },
+  {
+    "id": "dad-158",
+    "text": "Who was the builder of King Arthur’s round table?  Cir-cumference."
+  },
+  {
+    "id": "dad-160",
+    "text": "My 4 year old son can’t say please in Spanish.  That’s poor for four."
+  },
+  {
+    "id": "dad-161",
+    "text": "My bank keeps calling to compliment me.  They say I have an outstanding balance."
+  },
+  {
+    "id": "dad-163",
+    "text": "How do 37 mathematicians board a bus with only 36 seats?  They carry the one."
+  },
+  {
+    "id": "dad-164",
+    "text": "I tried to sue the airline for misplacing my luggage.  I lost the case."
+  },
+  {
+    "id": "dad-165",
+    "text": "What do you call a cow with two legs? Lean Beef"
+  },
+  {
+    "id": "dad-166",
+    "text": "What do you call a cow with three legs? Tri-Tip"
+  }
+]

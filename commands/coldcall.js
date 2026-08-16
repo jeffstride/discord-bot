@@ -86,11 +86,15 @@ export function loadStudentNames(studentsPath = defaultStudentsPath) {
 export function loadStudents(studentsPath = defaultStudentsPath) {
   const studentsCsv = loadStudentsCsv(studentsPath);
   const lastAbsentIndex = studentsCsv.normalizedHeaders.indexOf('last-absent');
+  const answeredIndex = studentsCsv.normalizedHeaders.indexOf('answered');
   return studentsCsv.rows
     .map((row, rowIndex) => ({
       name: row[studentsCsv.nameIndex]?.trim(),
       rowIndex,
       lastAbsent: lastAbsentIndex === -1 ? '' : row[lastAbsentIndex]?.trim(),
+      answered: answeredIndex === -1
+        ? 0
+        : Number.parseInt(row[answeredIndex] || '0', 10) || 0,
     }))
     .filter((student) => student.name);
 }
@@ -118,10 +122,17 @@ export function createColdcallResponse(
 ) {
   const selectableStudents = names
     .map((student, rowIndex) => (
-      typeof student === 'string' ? { name: student, rowIndex } : student
+      typeof student === 'string' ? { name: student, rowIndex, answered: 0 } : student
     ))
     .filter((student) => student.name);
-  const student = selectableStudents[Math.floor(random() * selectableStudents.length)];
+  const minimumAnswered = Math.min(
+    ...selectableStudents.map((student) => student.answered ?? 0),
+  );
+  const lowestAnsweredStudents = selectableStudents
+    .filter((student) => (student.answered ?? 0) === minimumAnswered);
+  const student = lowestAnsweredStudents[
+    Math.floor(random() * lowestAnsweredStudents.length)
+  ];
 
   if (!student) {
     return {

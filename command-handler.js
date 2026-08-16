@@ -6,6 +6,7 @@ import { command as credit, handleCommand as handleCredit } from './commands/cre
 import { command as setSection, handleCommand as handleSetSection } from './commands/setsection.js';
 import { command as poll, handleCommand as handlePoll } from './commands/poll.js';
 import { command as score, handleCommand as handleScore } from './commands/score.js';
+import { command as dad, handleCommand as handleDad } from './commands/dad.js';
 
 const commandHandlers = {
   [hello.name]: handleHello,
@@ -16,6 +17,7 @@ const commandHandlers = {
   [setSection.name]: handleSetSection,
   [poll.name]: handlePoll,
   [score.name]: handleScore,
+  [dad.name]: handleDad,
 };
 
 export async function handleCommand(req, res) {
