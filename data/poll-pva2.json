@@ -1,0 +1,19 @@
+{
+  "name": "pva2",
+  "prompt": "Waterfall will genuinely \"outperform\" Agile methodologies in contexts with low Changeability risk.",
+  "options": [
+    {
+      "text": "A) True"
+    },
+    {
+      "text": "B) False"
+    },
+    {
+      "text": "C) Maybe"
+    }
+  ],
+  "correctOptionIndexes": [
+    0
+  ],
+  "timeoutMs": 30000
+}
