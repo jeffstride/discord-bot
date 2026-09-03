@@ -5,8 +5,7 @@
       "prompt": "Prescriptive (planned) models bet more predictability is achievable; adaptive (agile) models bet that enough uncertainty exists that plans will need to be adjusted as the project progresses.",
       "options": [
         "A) True",
-        "B) False",
-        "C) Maybe"
+        "B) False"
       ],
       "correctOptionIndexes": [
         0
@@ -16,30 +15,27 @@
       "prompt": "Waterfall will genuinely \"outperform\" Agile methodologies in contexts with low Changeability risk.",
       "options": [
         "A) True",
-        "B) False",
-        "C) Maybe"
+        "B) False"
       ],
       "correctOptionIndexes": [
         0
       ]
     },
     {
-      "prompt": "Agile is better at mitigating Complexity.",
+      "prompt": "Agile is better at mitigating all types of Complexity.",
       "options": [
         "A) True",
-        "B) False",
-        "C) Maybe"
+        "B) False"
       ],
       "correctOptionIndexes": [
-        2
+        1
       ]
     },
     {
       "prompt": "XP bakes maintainability in as a first-class concern from day one (via continuous refactoring, test-driven development, sustainable pace) rather than treating it as a later bolt-on.",
       "options": [
         "A) True",
-        "B) False",
-        "C) Maybe"
+        "B) False"
       ],
       "correctOptionIndexes": [
         0
