@@ -15,10 +15,10 @@
     {
       "prompt": "Which of these statements about Accidental Difficulties is FALSE?",
       "options": [
-        "A) They are the problems that arise during the effort of building software.",
+        "A) They are difficulties from imperfect tools and processes, not from the software problem itself.",
         "B) They come from the tools, languages, techniques and processes we use.",
         "C) Tools succeeded precisely because they attacked these accidental difficulties.",
-        "D) Further tooling improvements will continue to deliver the same order-of-magnitude gains."
+        "D) Further tooling improvements will guarantee exponential gains."
       ],
       "correctOptionIndexes": [3]
     },
