@@ -109,8 +109,8 @@ export function loadPoll(name, dataDirectory = defaultDataDirectory) {
   const definition = JSON.parse(fs.readFileSync(pollPath, 'utf8'));
   const results = loadResults(name, dataDirectory);
   const timeoutMs = Number(definition.timeoutMs || 0);
-  if (!POLL_TIMEOUT_VALUES.includes(timeoutMs)) {
-    throw new Error('Invalid poll timeout');
+  if (!Number.isFinite(timeoutMs) || timeoutMs < 0) {
+    throw new Error('Poll timeout must be a non-negative number');
   }
 
   const questions = normalizeQuestions(definition).map((question, questionIndex) => ({

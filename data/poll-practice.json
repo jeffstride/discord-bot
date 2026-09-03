@@ -1,0 +1,26 @@
+{
+  "name": "practice",
+  "quetions" : [
+    {
+      "prompt": "What is the color of the sky?",
+      "options": [
+        "A) Red",
+        "B) Green",
+        "C) Blue",
+        "D) Can't be seen in Washington"
+      ],
+      "correctOptionIndexes": [ 2 ]
+    },
+    {
+      "prompt": "Which animal wins?",
+      "options": [
+        "A) Dog",
+        "B) Cat",
+        "C) Hamster",
+        "D) Fish"
+      ],
+      "correctOptionIndexes": [ 0, 1 ]
+    }
+  ],
+  "timeoutMs": 0
+}

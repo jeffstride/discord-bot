@@ -1,15 +1,37 @@
 {
   "name": "essentials",
-  "prompt": "Which of these is NOT an Essential Difficulty according to the article \"No Silver Bullet\"?",
-  "options": [
-    "A) Complexity",
-    "B) Quality",
-    "C) Conformity",
-    "D) Invisibility",
-    "E) Changeability"
+  "questions" : [
+    {
+      "prompt": "Which of these is NOT an Essential Difficulty according to the article `No Silver Bullet`?",
+      "options": [
+        "A) Complexity",
+        "B) Quality",
+        "C) Conformity",
+        "D) Invisibility",
+        "E) Changeability"
+      ],
+      "correctOptionIndexes": [1]     
+    },
+    {
+      "prompt": "Which of these statements about Accidental Difficulties is FALSE?",
+      "options": [
+        "A) They are the problems that arise during the effort of building software.",
+        "B) They come from the tools, languages, techniques and processes we use.",
+        "C) Tools succeeded precisely because they attacked these accidental difficulties.",
+        "D) Further tooling improvements will continue to deliver the same order-of-magnitude gains."
+      ],
+      "correctOptionIndexes": [3]
+    },
+    {
+      "prompt": "What is the main point of `No Silver Bullet`?",
+      "options": [
+        "A) The complexity of software will continue be reduced to almost nothing.",
+        "B) Human beings are a much bigger problem in SwE than the sofware itself.",
+        "C) No technique or technology will produce an order-of-magnitude improvement in software productivity.",
+        "D) If you pick the right SDLC, a near perfect product can be produced."
+      ],
+      "correctOptionIndexes": [2]
+    }
   ],
-  "correctOptionIndexes": [
-    1
-  ],
-  "timeoutMs": 0
+  "timeoutMs": 35000
 }
