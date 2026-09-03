@@ -2,18 +2,10 @@
   "name": "quiz1",
   "prompt": "What is the color of the sky?",
   "options": [
-    {
-      "text": "A) Red"
-    },
-    {
-      "text": "B) Green"
-    },
-    {
-      "text": "C) Blue"
-    },
-    {
-      "text": "D) Can't be seen in Washington"
-    }
+    "A) Red",
+    "B) Green",
+    "C) Blue",
+    "D) Can't be seen in Washington"
   ],
   "correctOptionIndexes": [
     2

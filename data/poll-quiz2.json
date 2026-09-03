@@ -2,18 +2,10 @@
   "name": "quiz2",
   "prompt": "What animal wins?",
   "options": [
-    {
-      "text": "A) Dog"
-    },
-    {
-      "text": "B) Cat"
-    },
-    {
-      "text": "C) Hamster"
-    },
-    {
-      "text": "D) Fish"
-    }
+    "A) Dog",
+    "B) Cat",
+    "C) Hamster",
+    "D) Fish"
   ],
   "correctOptionIndexes": [
     0,

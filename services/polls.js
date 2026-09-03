@@ -58,6 +58,9 @@ function validateQuestion(question, questionIndex) {
   const prompt = question?.prompt?.trim();
   const options = Array.isArray(question?.options) ? question.options : [];
   const correctOptionIndexes = question?.correctOptionIndexes || [];
+  const optionTexts = options.map((option) => (
+    typeof option === 'string' ? option : option?.text
+  ));
 
   if (!prompt) {
     throw new Error(`Question ${questionIndex + 1} requires a prompt`);
@@ -65,8 +68,8 @@ function validateQuestion(question, questionIndex) {
   if (options.length < 2 || options.length > 25) {
     throw new Error(`Question ${questionIndex + 1} must have between 2 and 25 answers`);
   }
-  if (options.some((option) => typeof option?.text !== 'string'
-    || !option.text.trim() || option.text.length > 100)) {
+  if (optionTexts.some((option) => typeof option !== 'string'
+    || !option.trim() || option.length > 100)) {
     throw new Error(`Question ${questionIndex + 1} answers must be 1 to 100 characters`);
   }
   if (!Array.isArray(correctOptionIndexes)
@@ -77,7 +80,7 @@ function validateQuestion(question, questionIndex) {
 
   return {
     prompt,
-    options: options.map((option) => ({ text: option.text.trim() })),
+    options: optionTexts.map((option) => ({ text: option.trim() })),
     correctOptionIndexes: [...new Set(correctOptionIndexes)].toSorted((left, right) => left - right),
   };
 }
@@ -140,7 +143,7 @@ function saveDefinition(poll, dataDirectory) {
     name: poll.name,
     questions: poll.questions.map((question) => ({
       prompt: question.prompt,
-      options: question.options.map((option) => ({ text: option.text })),
+      options: question.options.map((option) => option.text),
       correctOptionIndexes: question.correctOptionIndexes,
     })),
     timeoutMs: poll.timeoutMs,

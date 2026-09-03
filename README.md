@@ -130,12 +130,12 @@ directly as JSON. For example:
   "questions": [
     {
       "prompt": "First question?",
-      "options": [{ "text": "A" }, { "text": "B" }],
+      "options": ["A", "B"],
       "correctOptionIndexes": [0]
     },
     {
       "prompt": "Second question?",
-      "options": [{ "text": "C" }, { "text": "D" }],
+      "options": ["C", "D"],
       "correctOptionIndexes": [1]
     }
   ],
@@ -148,7 +148,7 @@ non-quiz question. The top-level timeout restarts for every question. After a
 response, the student's private ballot immediately advances to the next
 question. If a question times out, reopening the poll resumes at that question
 without discarding earlier responses. Existing single-question poll files are
-still supported.
+still supported, as are older option objects in the form `{ "text": "A" }`.
 
 ## Troubleshooting
 - **Interactions Endpoint URL won't save** → the app isn't running, or the port isn't public. Check both.

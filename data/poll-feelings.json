@@ -2,18 +2,10 @@
   "name": "feelings",
   "prompt": "How are you feeling today?",
   "options": [
-    {
-      "text": "A) Great!"
-    },
-    {
-      "text": "B) Okay"
-    },
-    {
-      "text": "C) Horrible"
-    },
-    {
-      "text": "D) I wish I had feelings"
-    }
+    "A) Great!",
+    "B) Okay",
+    "C) Horrible",
+    "D) I wish I had feelings"
   ],
   "correctOptionIndexes": []
 }

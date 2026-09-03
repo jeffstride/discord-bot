@@ -2,21 +2,11 @@
   "name": "essentials",
   "prompt": "Which of these is NOT an Essential Difficulty according to the article \"No Silver Bullet\"?",
   "options": [
-    {
-      "text": "A) Complexity"
-    },
-    {
-      "text": "B) Quality"
-    },
-    {
-      "text": "C) Conformity"
-    },
-    {
-      "text": "D) Invisibility"
-    },
-    {
-      "text": "E) Changeability"
-    }
+    "A) Complexity",
+    "B) Quality",
+    "C) Conformity",
+    "D) Invisibility",
+    "E) Changeability"
   ],
   "correctOptionIndexes": [
     1

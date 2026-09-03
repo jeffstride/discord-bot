@@ -76,6 +76,10 @@ test('persists a poll timeout', () => {
   createPoll('quiz1', 'Choose', 'Yes\nNo', '', dataDirectory, 30000);
 
   assert.equal(loadPoll('quiz1', dataDirectory).timeoutMs, 30000);
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(getPollPath('quiz1', dataDirectory), 'utf8')).questions[0].options,
+    ['Yes', 'No'],
+  );
   assert.throws(
     () => createPoll('quiz2', 'Choose', 'Yes\nNo', '', dataDirectory, 15000),
     /Invalid poll timeout/,
@@ -105,12 +109,12 @@ test('loads and records a multi-question poll in sequence', () => {
     questions: [
       {
         prompt: 'First?',
-        options: [{ text: 'A' }, { text: 'B' }],
+        options: ['A', 'B'],
         correctOptionIndexes: [0],
       },
       {
         prompt: 'Second?',
-        options: [{ text: 'C' }, { text: 'D' }],
+        options: ['C', 'D'],
         correctOptionIndexes: [1],
       },
     ],
@@ -141,7 +145,7 @@ test('accepts at most ten questions in a manually authored poll', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
   const question = {
     prompt: 'Choose',
-    options: [{ text: 'Yes' }, { text: 'No' }],
+    options: ['Yes', 'No'],
     correctOptionIndexes: [],
   };
   fs.writeFileSync(getPollPath('ten', dataDirectory), JSON.stringify({
