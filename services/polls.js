@@ -12,6 +12,7 @@ export function validatePollName(name) {
   return typeof name === 'string' && POLL_NAME_PATTERN.test(name);
 }
 
+// The definition (prompt/options/answer key) is meant to be committed to git.
 export function getPollPath(name, dataDirectory = defaultDataDirectory) {
   if (!validatePollName(name)) {
     throw new Error('Poll names may contain only letters, numbers, hyphens, and underscores');
@@ -19,8 +20,36 @@ export function getPollPath(name, dataDirectory = defaultDataDirectory) {
   return path.join(dataDirectory, `poll-${name}.json`);
 }
 
+// The results (votes/voters) change on every response, so they're git-ignored.
+export function getResultsPath(name, dataDirectory = defaultDataDirectory) {
+  if (!validatePollName(name)) {
+    throw new Error('Poll names may contain only letters, numbers, hyphens, and underscores');
+  }
+  return path.join(dataDirectory, `poll-results-${name}.json`);
+}
+
 export function getScoresPath(dataDirectory = defaultDataDirectory) {
   return path.join(dataDirectory, SCORES_FILENAME);
+}
+
+function loadResults(name, dataDirectory) {
+  const resultsPath = getResultsPath(name, dataDirectory);
+  if (!fs.existsSync(resultsPath)) {
+    return { voters: [], counts: [] };
+  }
+  const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+  return {
+    voters: results.voters || [],
+    counts: results.counts || [],
+  };
+}
+
+function saveResults(name, { voters, counts }, dataDirectory) {
+  fs.mkdirSync(dataDirectory, { recursive: true });
+  fs.writeFileSync(
+    getResultsPath(name, dataDirectory),
+    JSON.stringify({ voters, counts }, null, 2),
+  );
 }
 
 export function loadPoll(name, dataDirectory = defaultDataDirectory) {
@@ -29,16 +58,39 @@ export function loadPoll(name, dataDirectory = defaultDataDirectory) {
     throw new Error(`Poll "${name}" does not exist`);
   }
 
-  const poll = JSON.parse(fs.readFileSync(pollPath, 'utf8'));
-  poll.voters ||= [];
-  poll.correctOptionIndexes ||= [];
-  poll.timeoutMs ||= 0;
+  const definition = JSON.parse(fs.readFileSync(pollPath, 'utf8'));
+  const results = loadResults(name, dataDirectory);
+
+  return {
+    name: definition.name,
+    prompt: definition.prompt,
+    options: definition.options.map((option, index) => ({
+      text: option.text,
+      count: results.counts[index] || 0,
+    })),
+    correctOptionIndexes: definition.correctOptionIndexes || [],
+    timeoutMs: definition.timeoutMs || 0,
+    voters: results.voters,
+  };
+}
+
+function saveDefinition(poll, dataDirectory) {
+  fs.mkdirSync(dataDirectory, { recursive: true });
+  fs.writeFileSync(getPollPath(poll.name, dataDirectory), JSON.stringify({
+    name: poll.name,
+    prompt: poll.prompt,
+    options: poll.options.map((option) => ({ text: option.text })),
+    correctOptionIndexes: poll.correctOptionIndexes,
+    timeoutMs: poll.timeoutMs,
+  }, null, 2));
   return poll;
 }
 
-export function savePoll(poll, dataDirectory = defaultDataDirectory) {
-  fs.mkdirSync(dataDirectory, { recursive: true });
-  fs.writeFileSync(getPollPath(poll.name, dataDirectory), JSON.stringify(poll, null, 2));
+function savePollResults(poll, dataDirectory) {
+  saveResults(poll.name, {
+    voters: poll.voters,
+    counts: poll.options.map((option) => option.count),
+  }, dataDirectory);
   return poll;
 }
 
@@ -92,7 +144,7 @@ export function createPoll(
     throw new Error('Invalid poll timeout');
   }
 
-  return savePoll({
+  return saveDefinition({
     name,
     prompt: normalizedPrompt,
     options: answers.map((text) => ({ text, count: 0 })),
@@ -108,6 +160,10 @@ export function deletePoll(name, dataDirectory = defaultDataDirectory) {
     throw new Error(`Poll "${name}" does not exist`);
   }
   fs.unlinkSync(pollPath);
+  const resultsPath = getResultsPath(name, dataDirectory);
+  if (fs.existsSync(resultsPath)) {
+    fs.unlinkSync(resultsPath);
+  }
 }
 
 export function resetPoll(name, dataDirectory = defaultDataDirectory) {
@@ -116,7 +172,7 @@ export function resetPoll(name, dataDirectory = defaultDataDirectory) {
     option.count = 0;
   });
   poll.voters = [];
-  return savePoll(poll, dataDirectory);
+  return savePollResults(poll, dataDirectory);
 }
 
 export function hasVoted(name, userId, dataDirectory = defaultDataDirectory) {
@@ -232,7 +288,7 @@ export function recordPollVotes(
   const isQuiz = poll.correctOptionIndexes.length > 0;
   const isCorrect = isQuiz && poll.correctOptionIndexes.includes(uniqueIndexes[0]);
 
-  savePoll(poll, dataDirectory);
+  savePollResults(poll, dataDirectory);
   if (isQuiz) {
     updateUserScore(voter, isCorrect, dataDirectory);
   }

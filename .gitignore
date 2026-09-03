@@ -2,11 +2,12 @@
 # keep `.env.example` devoid of the secret values
 .env
 
-# don't persiste reminders data
+# poll definitions (data/poll-*.json) are committed to git;
+# only the per-poll results/votes and cumulative scores are ignored
 data/reminders.json
-data/poll-*.json
-data/poll_scores.json
+data/poll-results-*.json
 data/poll_*.json
+data/dad-jokes-state.json
 
 # Node
 node_modules/

@@ -6,6 +6,7 @@ import { command as creditCommand } from './commands/credit.js';
 import { command as setSectionCommand } from './commands/setsection.js';
 import { command as pollCommand } from './commands/poll.js';
 import { command as scoreCommand } from './commands/score.js';
+import { command as dadCommand } from './commands/dad.js';
 
 export const ALL_COMMANDS = [
   helloCommand,
@@ -16,4 +17,5 @@ export const ALL_COMMANDS = [
   setSectionCommand,
   pollCommand,
   scoreCommand,
+  dadCommand,
 ];

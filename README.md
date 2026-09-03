@@ -34,6 +34,7 @@ what you'll eventually use for the class project.
 | `services/sections.js` | Discovers CSV sections and remembers the active section per server |
 | `services/polls.js` | Persists poll definitions, respondents, counts, and quiz scores |
 | `data/students.csv` | Supplies names for the `/coldcall` command |
+| `data/dad-jokes.json` | Supplies non-repeating jokes for the `/dad` command |
 | `register-commands.js` | One-time script that tells Discord about the commands |
 | `utils.js` | Small helper for calling Discord's API with your bot token |
 | `.devcontainer/devcontainer.json` | Tells Codespaces what to install and which port to expose |
@@ -73,7 +74,7 @@ Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
 ```bash
 npm run register
 ```
-You should see `Registered 8 command(s): hello, roll, remind, coldcall, credit, setsection, poll, score`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
+You should see `Registered 9 command(s): hello, roll, remind, coldcall, credit, setsection, poll, score, dad`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
 
 ### 5. Run the bot
 ```bash
@@ -110,7 +111,11 @@ In your Discord test server, type `/hello`. The bot should reply "Hello from you
 Use `/poll name:<name> action:create` to define a poll, then use the `send`,
 `results`, `reset`, or `delete` actions to manage it. Poll administration
 is restricted to `COLD_CALL_USER_ID`; ballots are available to everyone, and
-each poll records which user IDs have submitted. Quiz scores are stored
+each poll records which user IDs have submitted. A poll's definition (prompt,
+options, answer key, timeout) is stored in `data/poll-<name>.json` and is
+meant to be committed to git. Its live results (vote counts and voter IDs)
+are stored separately in `data/poll-results-<name>.json`, which is
+git-ignored so responses don't create diffs. Quiz scores are stored
 separately in `data/poll_scores.json`. Use `/score` to view scores and
 `/score reset` as the configured instructor to clear all scores. Each score is
 calculated as `3 × correct − incorrect`.
