@@ -110,7 +110,11 @@ In your Discord test server, type `/hello`. The bot should reply "Hello from you
 Use `/poll name:<name> action:create` to define a poll, then use the `send`,
 `results`, `reset`, or `delete` actions to manage it. Poll administration
 is restricted to `COLD_CALL_USER_ID`; ballots are available to everyone, and
-each poll records which user IDs have submitted. Quiz scores are stored
+each poll records which user IDs have submitted. A poll's definition (prompt,
+options, answer key, timeout) is stored in `data/poll-<name>.json` and is
+meant to be committed to git. Its live results (vote counts and voter IDs)
+are stored separately in `data/poll-results-<name>.json`, which is
+git-ignored so responses don't create diffs. Quiz scores are stored
 separately in `data/poll_scores.json`. Use `/score` to view scores and
 `/score reset` as the configured instructor to clear all scores. Each score is
 calculated as `3 × correct − incorrect`.

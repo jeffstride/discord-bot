@@ -1,0 +1,23 @@
+{
+  "name": "quiz2",
+  "prompt": "What animal wins?",
+  "options": [
+    {
+      "text": "A) Dog"
+    },
+    {
+      "text": "B) Cat"
+    },
+    {
+      "text": "C) Hamster"
+    },
+    {
+      "text": "D) Fish"
+    }
+  ],
+  "correctOptionIndexes": [
+    0,
+    1
+  ],
+  "timeoutMs": 20000
+}
