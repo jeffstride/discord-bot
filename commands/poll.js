@@ -198,8 +198,54 @@ function createSendResponse(name, req) {
 function formatResults(poll) {
   return [
     `Results for poll ${poll.name}:`,
-    ...poll.options.map((option) => `${option.text}: ${option.count}`),
+    ...poll.questions.flatMap((question, index) => [
+      `\nQuestion ${index + 1}: ${question.prompt}`,
+      ...question.options.map((option) => `${option.text}: ${option.count}`),
+    ]),
   ].join('\n');
+}
+
+function ballotContent(poll, questionIndex, prefix = '') {
+  const question = poll.questions[questionIndex];
+  const heading = poll.questions.length > 1
+    ? `Question ${questionIndex + 1} of ${poll.questions.length}\n`
+    : '';
+  return addTimeoutNotice(`${prefix}${heading}${question.prompt}`, poll.timeoutMs);
+}
+
+function ballotComponents(name, question, questionIndex) {
+  return [{
+    type: MessageComponentTypes.ACTION_ROW,
+    components: [{
+      type: MessageComponentTypes.STRING_SELECT,
+      custom_id: `${POLL_VOTE_COMPONENT_PREFIX}${name}:${questionIndex}`,
+      placeholder: 'Select an answer',
+      min_values: 1,
+      max_values: 1,
+      options: question.options.map((option, index) => ({
+        label: option.text,
+        value: String(index),
+      })),
+    }],
+  }];
+}
+
+function scheduleBallotTimeout(endpoint, poll, questionIndex, ballotKey) {
+  const question = poll.questions[questionIndex];
+  const heading = poll.questions.length > 1
+    ? `Question ${questionIndex + 1} of ${poll.questions.length}\n`
+    : '';
+  const timer = scheduleMessageTimeout(
+    endpoint,
+    poll.timeoutMs,
+    `${heading}${question.prompt}\nTime expired. No response was recorded.`,
+    () => {
+      if (activeBallotTimers.get(ballotKey) === timer) {
+        activeBallotTimers.delete(ballotKey);
+      }
+    },
+  );
+  activeBallotTimers.set(ballotKey, timer);
 }
 
 export function getInvokingUser(req) {
@@ -284,6 +330,7 @@ export function handleOpenComponent(componentId, req) {
     const poll = loadPoll(name);
     const { userId } = getInvokingUser(req);
     const ballotKey = `${name}:${userId}`;
+    const questionIndex = (poll.responses[userId] || []).length;
 
     if (hasVoted(name, userId)) {
       return message('You have already answered this poll.', true);
@@ -296,22 +343,9 @@ export function handleOpenComponent(componentId, req) {
     const response = {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {
-        content: addTimeoutNotice(poll.prompt, poll.timeoutMs),
+        content: ballotContent(poll, questionIndex),
         flags: InteractionResponseFlags.EPHEMERAL,
-        components: [{
-          type: MessageComponentTypes.ACTION_ROW,
-          components: [{
-            type: MessageComponentTypes.STRING_SELECT,
-            custom_id: `${POLL_VOTE_COMPONENT_PREFIX}${name}`,
-            placeholder: 'Select an answer',
-            min_values: 1,
-            max_values: 1,
-            options: poll.options.map((option, index) => ({
-              label: option.text,
-              value: String(index),
-            })),
-          }],
-        }],
+        components: ballotComponents(name, poll.questions[questionIndex], questionIndex),
       },
     };
 
@@ -323,13 +357,7 @@ export function handleOpenComponent(componentId, req) {
     return {
       response,
       afterResponse: () => {
-        const timer = scheduleMessageTimeout(
-          endpoint,
-          poll.timeoutMs,
-          `${poll.prompt}\nTime expired. No response was recorded.`,
-          () => activeBallotTimers.delete(ballotKey),
-        );
-        activeBallotTimers.set(ballotKey, timer);
+        scheduleBallotTimeout(endpoint, poll, questionIndex, ballotKey);
       },
     };
   } catch (error) {
@@ -339,7 +367,12 @@ export function handleOpenComponent(componentId, req) {
 
 export function handleVoteComponent(componentId, req) {
   try {
-    const name = componentId.slice(POLL_VOTE_COMPONENT_PREFIX.length);
+    const ballotId = componentId.slice(POLL_VOTE_COMPONENT_PREFIX.length);
+    const separatorIndex = ballotId.lastIndexOf(':');
+    const name = separatorIndex === -1 ? ballotId : ballotId.slice(0, separatorIndex);
+    const questionIndex = separatorIndex === -1
+      ? 0
+      : Number.parseInt(ballotId.slice(separatorIndex + 1), 10);
     const applicationId = process.env.DISCORD_APPLICATION_ID;
 
     if (!applicationId || !req.body.token || !req.body.message?.id) {
@@ -347,29 +380,46 @@ export function handleVoteComponent(componentId, req) {
     }
 
     const selectedIndexes = req.body.data.values || [];
-    const result = recordPollVotes(name, selectedIndexes, getInvokingUser(req));
+    const result = recordPollVotes(
+      name,
+      selectedIndexes,
+      getInvokingUser(req),
+      undefined,
+      questionIndex,
+    );
     const ballotKey = `${name}:${getInvokingUser(req).userId}`;
     const ballotTimer = activeBallotTimers.get(ballotKey);
     if (ballotTimer) {
       clearTimeout(ballotTimer);
       activeBallotTimers.delete(ballotKey);
     }
-    const selectedOption = result.poll.options[Number.parseInt(selectedIndexes[0], 10)].text;
+    const selectedOption = result.question.options[Number.parseInt(selectedIndexes[0], 10)].text;
     const outcome = result.isQuiz
       ? (result.isCorrect ? '✅ Correct' : '❌ Incorrect')
       : 'Response recorded';
     const endpoint = `webhooks/${applicationId}/${req.body.token}/messages/${req.body.message.id}`;
+    const nextQuestionIndex = questionIndex + 1;
+    const feedback = `You selected: ${selectedOption}\n${outcome}`;
+    const nextQuestion = result.poll.questions[nextQuestionIndex];
     return {
       response: {
         type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE,
       },
-      afterResponse: () => DiscordRequest(endpoint, {
-        method: 'PATCH',
-        body: {
-          content: `You selected: ${selectedOption}\n${outcome}`,
-          components: [],
-        },
-      }),
+      afterResponse: async () => {
+        await DiscordRequest(endpoint, {
+          method: 'PATCH',
+          body: nextQuestion ? {
+            content: ballotContent(result.poll, nextQuestionIndex, `${feedback}\n\n`),
+            components: ballotComponents(name, nextQuestion, nextQuestionIndex),
+          } : {
+            content: `${feedback}\n\nPoll complete.`,
+            components: [],
+          },
+        });
+        if (nextQuestion && result.poll.timeoutMs) {
+          scheduleBallotTimeout(endpoint, result.poll, nextQuestionIndex, ballotKey);
+        }
+      },
     };
   } catch (error) {
     return { response: message(error.message, true) };

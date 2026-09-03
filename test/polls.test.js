@@ -18,6 +18,7 @@ import {
   getUserScoreRecord,
   getPollPath,
   loadPoll,
+  MAX_POLL_QUESTIONS,
   recordPollVotes,
   resetPoll,
   resetScores,
@@ -79,6 +80,81 @@ test('persists a poll timeout', () => {
     () => createPoll('quiz2', 'Choose', 'Yes\nNo', '', dataDirectory, 15000),
     /Invalid poll timeout/,
   );
+});
+
+test('loads the legacy single-question JSON format', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  fs.writeFileSync(getPollPath('legacy', dataDirectory), JSON.stringify({
+    name: 'legacy',
+    prompt: 'Choose',
+    options: [{ text: 'Yes' }, { text: 'No' }],
+    correctOptionIndexes: [0],
+    timeoutMs: 0,
+  }));
+
+  const poll = loadPoll('legacy', dataDirectory);
+  assert.equal(poll.questions.length, 1);
+  assert.equal(poll.prompt, 'Choose');
+  assert.deepEqual(poll.options.map((option) => option.text), ['Yes', 'No']);
+});
+
+test('loads and records a multi-question poll in sequence', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  fs.writeFileSync(getPollPath('quiz1', dataDirectory), JSON.stringify({
+    name: 'quiz1',
+    questions: [
+      {
+        prompt: 'First?',
+        options: [{ text: 'A' }, { text: 'B' }],
+        correctOptionIndexes: [0],
+      },
+      {
+        prompt: 'Second?',
+        options: [{ text: 'C' }, { text: 'D' }],
+        correctOptionIndexes: [1],
+      },
+    ],
+    timeoutMs: 20000,
+  }));
+  const voter = { userId: 'user-1', username: 'Ada' };
+
+  const first = recordPollVotes('quiz1', ['0'], voter, dataDirectory, 0);
+  assert.equal(first.isComplete, false);
+  assert.deepEqual(first.poll.responses['user-1'], [0]);
+  assert.deepEqual(first.poll.voters, []);
+  assert.throws(
+    () => recordPollVotes('quiz1', ['0'], voter, dataDirectory, 0),
+    /no longer active/,
+  );
+
+  const second = recordPollVotes('quiz1', ['1'], voter, dataDirectory, 1);
+  assert.equal(second.isComplete, true);
+  assert.deepEqual(second.poll.voters, ['user-1']);
+  assert.deepEqual(
+    second.poll.questions.map((question) => question.options.map((option) => option.count)),
+    [[1, 0], [0, 1]],
+  );
+  assert.equal(getUserScore('user-1', dataDirectory), 6);
+});
+
+test('accepts at most ten questions in a manually authored poll', () => {
+  const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'polls-'));
+  const question = {
+    prompt: 'Choose',
+    options: [{ text: 'Yes' }, { text: 'No' }],
+    correctOptionIndexes: [],
+  };
+  fs.writeFileSync(getPollPath('ten', dataDirectory), JSON.stringify({
+    name: 'ten',
+    questions: Array.from({ length: MAX_POLL_QUESTIONS }, () => question),
+  }));
+  assert.equal(loadPoll('ten', dataDirectory).questions.length, 10);
+
+  fs.writeFileSync(getPollPath('eleven', dataDirectory), JSON.stringify({
+    name: 'eleven',
+    questions: Array.from({ length: MAX_POLL_QUESTIONS + 1 }, () => question),
+  }));
+  assert.throws(() => loadPoll('eleven', dataDirectory), /between 1 and 10 questions/);
 });
 
 test('creates a poll and records aggregate votes by user', () => {

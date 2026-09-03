@@ -7,6 +7,7 @@ const defaultDataDirectory = path.join(servicesDirectory, '..', 'data');
 const POLL_NAME_PATTERN = /^[a-zA-Z0-9_-]{1,50}$/;
 const SCORES_FILENAME = 'poll_scores.json';
 export const POLL_TIMEOUT_VALUES = [0, 20000, 30000, 40000, 60000];
+export const MAX_POLL_QUESTIONS = 10;
 
 export function validatePollName(name) {
   return typeof name === 'string' && POLL_NAME_PATTERN.test(name);
@@ -35,21 +36,65 @@ export function getScoresPath(dataDirectory = defaultDataDirectory) {
 function loadResults(name, dataDirectory) {
   const resultsPath = getResultsPath(name, dataDirectory);
   if (!fs.existsSync(resultsPath)) {
-    return { voters: [], counts: [] };
+    return { voters: [], counts: [], responses: {} };
   }
   const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
   return {
     voters: results.voters || [],
     counts: results.counts || [],
+    responses: results.responses || {},
   };
 }
 
-function saveResults(name, { voters, counts }, dataDirectory) {
+function saveResults(name, { voters, counts, responses }, dataDirectory) {
   fs.mkdirSync(dataDirectory, { recursive: true });
   fs.writeFileSync(
     getResultsPath(name, dataDirectory),
-    JSON.stringify({ voters, counts }, null, 2),
+    JSON.stringify({ voters, counts, responses }, null, 2),
   );
+}
+
+function validateQuestion(question, questionIndex) {
+  const prompt = question?.prompt?.trim();
+  const options = Array.isArray(question?.options) ? question.options : [];
+  const correctOptionIndexes = question?.correctOptionIndexes || [];
+
+  if (!prompt) {
+    throw new Error(`Question ${questionIndex + 1} requires a prompt`);
+  }
+  if (options.length < 2 || options.length > 25) {
+    throw new Error(`Question ${questionIndex + 1} must have between 2 and 25 answers`);
+  }
+  if (options.some((option) => typeof option?.text !== 'string'
+    || !option.text.trim() || option.text.length > 100)) {
+    throw new Error(`Question ${questionIndex + 1} answers must be 1 to 100 characters`);
+  }
+  if (!Array.isArray(correctOptionIndexes)
+    || correctOptionIndexes.some((index) => !Number.isInteger(index)
+      || index < 0 || index >= options.length)) {
+    throw new Error(`Question ${questionIndex + 1} has an invalid correct answer index`);
+  }
+
+  return {
+    prompt,
+    options: options.map((option) => ({ text: option.text.trim() })),
+    correctOptionIndexes: [...new Set(correctOptionIndexes)].toSorted((left, right) => left - right),
+  };
+}
+
+function normalizeQuestions(definition) {
+  const questions = Array.isArray(definition.questions)
+    ? definition.questions
+    : [{
+      prompt: definition.prompt,
+      options: definition.options,
+      correctOptionIndexes: definition.correctOptionIndexes || [],
+    }];
+
+  if (questions.length < 1 || questions.length > MAX_POLL_QUESTIONS) {
+    throw new Error(`A poll must have between 1 and ${MAX_POLL_QUESTIONS} questions`);
+  }
+  return questions.map(validateQuestion);
 }
 
 export function loadPoll(name, dataDirectory = defaultDataDirectory) {
@@ -60,27 +105,44 @@ export function loadPoll(name, dataDirectory = defaultDataDirectory) {
 
   const definition = JSON.parse(fs.readFileSync(pollPath, 'utf8'));
   const results = loadResults(name, dataDirectory);
+  const timeoutMs = Number(definition.timeoutMs || 0);
+  if (!POLL_TIMEOUT_VALUES.includes(timeoutMs)) {
+    throw new Error('Invalid poll timeout');
+  }
 
-  return {
-    name: definition.name,
-    prompt: definition.prompt,
-    options: definition.options.map((option, index) => ({
-      text: option.text,
-      count: results.counts[index] || 0,
+  const questions = normalizeQuestions(definition).map((question, questionIndex) => ({
+    ...question,
+    options: question.options.map((option, optionIndex) => ({
+      ...option,
+      count: Array.isArray(results.counts[questionIndex])
+        ? (results.counts[questionIndex][optionIndex] || 0)
+        // Compatibility with result files created by the single-question format.
+        : (questionIndex === 0 ? results.counts[optionIndex] || 0 : 0),
     })),
-    correctOptionIndexes: definition.correctOptionIndexes || [],
-    timeoutMs: definition.timeoutMs || 0,
+  }));
+  const poll = {
+    name,
+    questions,
+    timeoutMs,
     voters: results.voters,
+    responses: results.responses,
   };
+  // Keep the original service API useful for callers handling one-question polls.
+  poll.prompt = questions[0].prompt;
+  poll.options = questions[0].options;
+  poll.correctOptionIndexes = questions[0].correctOptionIndexes;
+  return poll;
 }
 
 function saveDefinition(poll, dataDirectory) {
   fs.mkdirSync(dataDirectory, { recursive: true });
   fs.writeFileSync(getPollPath(poll.name, dataDirectory), JSON.stringify({
     name: poll.name,
-    prompt: poll.prompt,
-    options: poll.options.map((option) => ({ text: option.text })),
-    correctOptionIndexes: poll.correctOptionIndexes,
+    questions: poll.questions.map((question) => ({
+      prompt: question.prompt,
+      options: question.options.map((option) => ({ text: option.text })),
+      correctOptionIndexes: question.correctOptionIndexes,
+    })),
     timeoutMs: poll.timeoutMs,
   }, null, 2));
   return poll;
@@ -89,7 +151,8 @@ function saveDefinition(poll, dataDirectory) {
 function savePollResults(poll, dataDirectory) {
   saveResults(poll.name, {
     voters: poll.voters,
-    counts: poll.options.map((option) => option.count),
+    counts: poll.questions.map((question) => question.options.map((option) => option.count)),
+    responses: poll.responses,
   }, dataDirectory);
   return poll;
 }
@@ -146,10 +209,13 @@ export function createPoll(
 
   return saveDefinition({
     name,
-    prompt: normalizedPrompt,
-    options: answers.map((text) => ({ text, count: 0 })),
-    correctOptionIndexes,
+    questions: [{
+      prompt: normalizedPrompt,
+      options: answers.map((text) => ({ text, count: 0 })),
+      correctOptionIndexes,
+    }],
     voters: [],
+    responses: {},
     timeoutMs: normalizedTimeout,
   }, dataDirectory);
 }
@@ -168,10 +234,13 @@ export function deletePoll(name, dataDirectory = defaultDataDirectory) {
 
 export function resetPoll(name, dataDirectory = defaultDataDirectory) {
   const poll = loadPoll(name, dataDirectory);
-  poll.options.forEach((option) => {
-    option.count = 0;
+  poll.questions.forEach((question) => {
+    question.options.forEach((option) => {
+      option.count = 0;
+    });
   });
   poll.voters = [];
+  poll.responses = {};
   return savePollResults(poll, dataDirectory);
 }
 
@@ -260,6 +329,7 @@ export function recordPollVotes(
   selectedIndexes,
   voter,
   dataDirectory = defaultDataDirectory,
+  questionIndex = 0,
 ) {
   const poll = loadPoll(name, dataDirectory);
   if (!voter?.userId || !voter?.username) {
@@ -268,6 +338,12 @@ export function recordPollVotes(
   if (poll.voters.includes(voter.userId)) {
     throw new Error('You have already answered this poll');
   }
+
+  const existingResponses = poll.responses[voter.userId] || [];
+  if (questionIndex !== existingResponses.length || !poll.questions[questionIndex]) {
+    throw new Error('This poll question is no longer active');
+  }
+  const question = poll.questions[questionIndex];
 
   const uniqueIndexes = [...new Set(
     selectedIndexes.map((value) => Number.parseInt(value, 10)),
@@ -278,20 +354,24 @@ export function recordPollVotes(
   }
 
   uniqueIndexes.forEach((index) => {
-    if (!Number.isInteger(index) || !poll.options[index]) {
+    if (!Number.isInteger(index) || !question.options[index]) {
       throw new Error('Invalid poll selection');
     }
-    poll.options[index].count += 1;
+    question.options[index].count += 1;
   });
 
-  poll.voters.push(voter.userId);
-  const isQuiz = poll.correctOptionIndexes.length > 0;
-  const isCorrect = isQuiz && poll.correctOptionIndexes.includes(uniqueIndexes[0]);
+  poll.responses[voter.userId] = [...existingResponses, uniqueIndexes[0]];
+  const isComplete = poll.responses[voter.userId].length === poll.questions.length;
+  if (isComplete) {
+    poll.voters.push(voter.userId);
+  }
+  const isQuiz = question.correctOptionIndexes.length > 0;
+  const isCorrect = isQuiz && question.correctOptionIndexes.includes(uniqueIndexes[0]);
 
   savePollResults(poll, dataDirectory);
   if (isQuiz) {
     updateUserScore(voter, isCorrect, dataDirectory);
   }
 
-  return { poll, isQuiz, isCorrect };
+  return { poll, question, questionIndex, isQuiz, isCorrect, isComplete };
 }

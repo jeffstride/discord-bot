@@ -120,6 +120,36 @@ separately in `data/poll_scores.json`. Use `/score` to view scores and
 `/score reset` as the configured instructor to clear all scores. Each score is
 calculated as `3 × correct − incorrect`.
 
+A poll definition may contain between 1 and 10 questions. `/poll create`
+creates a one-question definition; multi-question definitions are edited
+directly as JSON. For example:
+
+```json
+{
+  "name": "quiz1",
+  "questions": [
+    {
+      "prompt": "First question?",
+      "options": [{ "text": "A" }, { "text": "B" }],
+      "correctOptionIndexes": [0]
+    },
+    {
+      "prompt": "Second question?",
+      "options": [{ "text": "C" }, { "text": "D" }],
+      "correctOptionIndexes": [1]
+    }
+  ],
+  "timeoutMs": 30000
+}
+```
+
+`correctOptionIndexes` uses zero-based option indexes and may be empty for a
+non-quiz question. The top-level timeout restarts for every question. After a
+response, the student's private ballot immediately advances to the next
+question. If a question times out, reopening the poll resumes at that question
+without discarding earlier responses. Existing single-question poll files are
+still supported.
+
 ## Troubleshooting
 - **Interactions Endpoint URL won't save** → the app isn't running, or the port isn't public. Check both.
 - **401 / invalid signature errors** → double-check `DISCORD_PUBLIC_KEY` in `.env` matches the Developer Portal exactly, and make sure no other middleware (like `express.json()`) runs before `verifyKeyMiddleware` on the `/interactions` route.
