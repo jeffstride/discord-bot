@@ -13,22 +13,22 @@
       "correctOptionIndexes": [1]     
     },
     {
-      "prompt": "Which of these statements about Accidental Difficulties is FALSE?",
+      "prompt": "Which of these statements about Accidental Difficulties is True?",
       "options": [
-        "A) They are difficulties from imperfect tools and processes, not from the software problem itself.",
-        "B) They come from the tools, languages, techniques and processes we use.",
-        "C) Tools succeeded precisely because they attacked these accidental difficulties.",
-        "D) Further tooling improvements will guarantee exponential gains."
+        "A) They stem from tools not software",
+        "B) They can never be addressed",
+        "C) Tools fail to address them",
+        "D) Future tools guarantee big gains"
       ],
-      "correctOptionIndexes": [3]
+      "correctOptionIndexes": [0]
     },
     {
       "prompt": "What is the main point of `No Silver Bullet`?",
       "options": [
-        "A) The complexity of software will continue be reduced to almost nothing.",
-        "B) Human beings are a much bigger problem in SwE than the sofware itself.",
-        "C) No technique or technology will produce an order-of-magnitude improvement in software productivity.",
-        "D) If you pick the right SDLC, a near perfect product can be produced."
+        "A) Complexity will nearly vanish",
+        "B) People are bigger problem than SW",
+        "C) No tech will give 10x productivity",
+        "D) Right SDLC yields near-perfect SW"
       ],
       "correctOptionIndexes": [2]
     }
