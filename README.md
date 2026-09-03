@@ -34,6 +34,7 @@ what you'll eventually use for the class project.
 | `services/sections.js` | Discovers CSV sections and remembers the active section per server |
 | `services/polls.js` | Persists poll definitions, respondents, counts, and quiz scores |
 | `data/students.csv` | Supplies names for the `/coldcall` command |
+| `data/dad-jokes.json` | Supplies non-repeating jokes for the `/dad` command |
 | `register-commands.js` | One-time script that tells Discord about the commands |
 | `utils.js` | Small helper for calling Discord's API with your bot token |
 | `.devcontainer/devcontainer.json` | Tells Codespaces what to install and which port to expose |
@@ -73,7 +74,7 @@ Then open `.env` and paste in your Application ID, Public Key, and Bot Token.
 ```bash
 npm run register
 ```
-You should see `Registered 8 command(s): hello, roll, remind, coldcall, credit, setsection, poll, score`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
+You should see `Registered 9 command(s): hello, roll, remind, coldcall, credit, setsection, poll, score, dad`. Global commands can take up to an hour to show up the first time — see the note in `register-commands.js` if you want a faster, test-server-only alternative.
 
 ### 5. Run the bot
 ```bash

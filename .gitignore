@@ -6,7 +6,8 @@
 # only the per-poll results/votes and cumulative scores are ignored
 data/reminders.json
 data/poll-results-*.json
-data/poll_scores.json
+data/poll_*.json
+data/dad-jokes-state.json
 
 # Node
 node_modules/

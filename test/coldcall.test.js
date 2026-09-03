@@ -37,6 +37,37 @@ test('returns the selected student in the command response', () => {
   );
 });
 
+test('randomly selects only among students with the lowest answered count', () => {
+  const students = [
+    { name: 'Ada', rowIndex: 0, answered: 5 },
+    { name: 'Grace', rowIndex: 1, answered: 4 },
+    { name: 'Linus', rowIndex: 2, answered: 4 },
+    { name: 'Margaret', rowIndex: 3, answered: 6 },
+  ];
+
+  assert.equal(
+    createColdcallResponse(students, () => 0).data.content,
+    'Grace has been selected',
+  );
+  assert.equal(
+    createColdcallResponse(students, () => 0.75).data.content,
+    'Linus has been selected',
+  );
+});
+
+test('selects the sole student with the lowest answered count', () => {
+  const students = [
+    { name: 'Ada', rowIndex: 0, answered: 5 },
+    { name: 'Grace', rowIndex: 1, answered: 4 },
+    { name: 'Linus', rowIndex: 2, answered: 5 },
+  ];
+
+  assert.equal(
+    createColdcallResponse(students, () => 0.99).data.content,
+    'Grace has been selected',
+  );
+});
+
 test('increments a student result and preserves other CSV columns', () => {
   const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'students-'));
   const studentsPath = path.join(tempDirectory, 'students.csv');
